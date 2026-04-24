@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cheyla J Tavarez</title>
+  <meta name="description" content="Personal website for Cheyla J Tavarez." />
+  <style>
+    :root {
+      --bg: #f8f5f2;
+      --surface: #ffffff;
+      --text: #2f2a27;
+      --muted: #6b625d;
+      --accent: #b57f6d;
+      --accent-dark: #8f5f4f;
+      --line: #e9dfd8;
+      --max: 1120px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container {
+      width: min(100% - 2rem, var(--max));
+      margin: 0 auto;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(10px);
+      background: rgba(248, 245, 242, 0.88);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 0;
+      gap: 1rem;
+    }
+
+    .brand {
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .hero {
+      padding: 5rem 0 4rem;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 0.35rem 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      background: rgba(255,255,255,0.75);
+    }
+
+    h1 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      line-height: 1.05;
+      margin: 1rem 0;
+    }
+
+    .lead {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 60ch;
+    }
+
+    .cta-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.95rem 1.2rem;
+      border-radius: 999px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      transition: 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: var(--accent-dark); }
+
+    .btn-secondary {
+      border-color: var(--line);
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .hero-card {
+      background: linear-gradient(180deg, #fff 0%, #f3ece7 100%);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 2rem;
+      min-height: 420px;
+      display: flex;
+      align-items: end;
+      box-shadow: 0 16px 40px rgba(36, 28, 21, 0.06);
+    }
+
+    .hero-card-inner {
+      width: 100%;
+      border-top: 1px solid rgba(0,0,0,0.07);
+      padding-top: 1rem;
+      color: var(--muted);
+    }
+
+    section {
+      padding: 4.5rem 0;
+    }
+
+    .section-title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      margin: 0 0 0.75rem;
+    }
+
+    .section-copy {
+      color: var(--muted);
+      max-width: 65ch;
+      margin-bottom: 2rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 30px rgba(36, 28, 21, 0.04);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .card p { color: var(--muted); margin: 0; }
+
+    .about {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .quote {
+      background: #efe6df;
+      border-radius: 24px;
+      padding: 2rem;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.4rem;
+      line-height: 1.4;
+    }
+
+    .contact-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    form {
+      display: grid;
+      gap: 1rem;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 0.95rem 1rem;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font: inherit;
+      color: var(--text);
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    footer {
+      padding: 2rem 0 3rem;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+    }
+
+    .small {
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 900px) {
+      .hero,
+      .about,
+      .contact-wrap,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a href="#top" class="brand">CHEYLA J TAVAREZ</a>
+      <nav class="nav-links">
+        <a href="#about">About</a>
+        <a href="#focus">Focus</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section>
+      <div class="container hero">
+        <div>
+          <span class="eyebrow">Welcome to cheylajtavarez.com</span>
+          <h1>A calm, modern home for your story, work, and voice.</h1>
+          <p class="lead">
+            This starter homepage is designed to feel warm, personal, and polished. Replace this copy with your real introduction, mission, and the message you want visitors to remember.
+          </p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="#contact">Get in touch</a>
+            <a class="btn btn-secondary" href="#about">Learn more</a>
+          </div>
+        </div>
+        <div class="hero-card">
+          <div class="hero-card-inner">
+            <strong>Suggested use</strong>
+            <p>Use this space for a featured image, short bio, latest message, or a highlighted offer.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="focus">
+      <div class="container">
+        <h2 class="section-title">What this site can highlight</h2>
+        <p class="section-copy">
+          Keep the first version simple. Start with three core themes so visitors immediately understand who you are and what the site is for.
+        </p>
+        <div class="grid-3">
+          <article class="card">
+            <h3>Your message</h3>
+            <p>Share your purpose, your values, and the heart behind the work you do.</p>
+          </article>
+          <article class="card">
+            <h3>Your story</h3>
+            <p>Introduce yourself with a short, honest bio that feels human and memorable.</p>
+          </article>
+          <article class="card">
+            <h3>Your next step</h3>
+            <p>Give visitors one clear action to take such as contacting you, following you, or booking time.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="container about">
+        <div class="quote">
+          “A beautiful website does not need to be crowded. It needs to be clear.”
+        </div>
+        <div>
+          <h2 class="section-title">About</h2>
+          <p class="section-copy">
+            This section is where you can introduce Cheyla in a more personal way. Talk about your background, what you care about, who you help, or what kind of content and experience people can expect when they visit this site.
+          </p>
+          <p class="small">
+            Tip: keep this section between 80 and 150 words for the first version.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="container">
+        <h2 class="section-title">Contact</h2>
+        <p class="section-copy">
+          For the first version on Apache, this form is visual only. Later, you can connect it to email, a Google Form, Formspree, or a custom PHP handler.
+        </p>
+        <div class="contact-wrap">
+          <div class="card">
+            <form>
+              <input type="text" placeholder="Your name" aria-label="Your name" />
+              <input type="email" placeholder="Your email" aria-label="Your email" />
+              <textarea placeholder="Your message" aria-label="Your message"></textarea>
+              <button class="btn btn-primary" type="button">Send message</button>
+            </form>
+          </div>
+          <div class="card">
+            <h3>Direct details</h3>
+            <p>Add your preferred email, social links, and a short sentence telling people when they can expect a reply.</p>
+            <br />
+            <p><strong>Email:</strong> yourname@example.com</p>
+            <p><strong>Instagram:</strong> @yourhandle</p>
+            <p><strong>Location:</strong> Add city or region if useful</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div>© <span id="year"></span> Cheyla J Tavarez. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
