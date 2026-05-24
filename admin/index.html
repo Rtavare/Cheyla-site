@@ -293,83 +293,6 @@
 
   .hidden { display: none !important; }
 
-  /* ── Auth gate ── */
-  #authGate {
-    position: fixed; inset: 0; z-index: 999;
-    background: var(--cream);
-    display: flex; align-items: center; justify-content: center;
-    padding: 1.5rem;
-  }
-
-  .auth-box {
-    width: 100%; max-width: 360px;
-    background: var(--warm-white);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 2rem 1.75rem;
-    display: flex; flex-direction: column;
-    align-items: center; gap: 18px;
-    box-shadow: var(--shadow);
-  }
-
-  .auth-logo {
-    width: 56px; height: 56px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--rose-light), #fce4ec);
-    border: 1.5px solid var(--rose);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Playfair Display', serif;
-    font-size: 20px; color: var(--rose-dark);
-  }
-
-  .auth-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px; font-weight: 400;
-    color: var(--text-primary); text-align: center;
-  }
-
-  .auth-sub {
-    font-size: 13px; color: var(--text-secondary);
-    text-align: center; margin-top: -8px;
-  }
-
-  .auth-field {
-    width: 100%; position: relative;
-  }
-
-  .auth-input {
-    width: 100%; padding: 11px 42px 11px 14px;
-    border: 1px solid var(--border); border-radius: 12px;
-    font-size: 14px; font-family: 'DM Sans', sans-serif;
-    background: var(--cream); color: var(--text-primary);
-    outline: none; transition: border-color 0.2s;
-    letter-spacing: 0.05em;
-  }
-  .auth-input:focus { border-color: var(--rose-mid); }
-
-  .auth-eye {
-    position: absolute; right: 12px; top: 50%;
-    transform: translateY(-50%);
-    background: none; border: none; cursor: pointer;
-    color: var(--text-muted); font-size: 16px; padding: 0;
-    line-height: 1;
-  }
-
-  .auth-error {
-    font-size: 12px; color: #c0392b;
-    text-align: center; min-height: 16px;
-  }
-
-  .btn-auth {
-    width: 100%; padding: 12px;
-    background: var(--rose-dark); color: #fff;
-    border: none; border-radius: 12px;
-    font-size: 14px; font-weight: 500;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer; transition: background 0.2s;
-  }
-  .btn-auth:hover { background: #a04868; }
-  .btn-auth:disabled { opacity: 0.5; cursor: default; }
-
   /* ── Footer ── */
   .footer {
     text-align: center; font-size: 12px;
@@ -385,25 +308,7 @@
 </head>
 <body>
 
-<!-- ── Password gate (shown until authenticated) ─────────────────────────── -->
-<div id="authGate">
-  <div class="auth-box">
-    <div class="auth-logo">C</div>
-    <div class="auth-title">Brand Agent</div>
-    <div class="auth-sub">Enter your password to continue</div>
-    <div class="auth-field">
-      <input type="password" class="auth-input" id="authInput"
-        placeholder="Password"
-        onkeydown="if(event.key==='Enter') submitAuth()" />
-      <button class="auth-eye" onclick="toggleAuthEye()" id="authEye" title="Show/hide">👁</button>
-    </div>
-    <div class="auth-error" id="authError"></div>
-    <button class="btn-auth" id="authBtn" onclick="submitAuth()">Sign in</button>
-  </div>
-</div>
-
-<!-- ── Main page (hidden until authenticated) ────────────────────────────── -->
-<div class="page" id="mainPage" style="display:none">
+<div class="page">
 
   <!-- Header -->
   <div class="header">
@@ -513,7 +418,7 @@
 
   <div class="footer">Made for Cheyla · Powered by Claude Pro</div>
 
-</div><!-- /#mainPage -->
+</div>
 
 <!-- Toast -->
 <div class="toast" id="toast">
@@ -522,63 +427,6 @@
 </div>
 
 <script>
-// ─── Auth gate ────────────────────────────────────────────────────────────────
-// SHA-256 of the admin password (change hash + redeploy to rotate password).
-const AUTH_HASH = "c9abd8b608cf67354dd2496af57f8e66faf2e36583ea7dc8b5b9fdbc8e01fa99";
-const SESSION_KEY = "cheyla_admin_auth";
-
-async function sha256(str) {
-  const buf = await crypto.subtle.digest("SHA-256",
-    new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf))
-    .map(b => b.toString(16).padStart(2, "0")).join("");
-}
-
-async function checkAuth() {
-  if (sessionStorage.getItem(SESSION_KEY) === AUTH_HASH) {
-    showApp();
-  }
-  // else: gate stays visible
-}
-
-async function submitAuth() {
-  const input = document.getElementById("authInput");
-  const btn   = document.getElementById("authBtn");
-  const err   = document.getElementById("authError");
-  const val   = input.value;
-  if (!val) return;
-
-  btn.disabled = true;
-  btn.textContent = "Checking…";
-  err.textContent = "";
-
-  const hash = await sha256(val);
-  if (hash === AUTH_HASH) {
-    sessionStorage.setItem(SESSION_KEY, AUTH_HASH);
-    showApp();
-  } else {
-    err.textContent = "Incorrect password — try again.";
-    input.value = "";
-    input.focus();
-    btn.disabled = false;
-    btn.textContent = "Sign in";
-  }
-}
-
-function showApp() {
-  document.getElementById("authGate").style.display = "none";
-  document.getElementById("mainPage").style.display  = "flex";
-}
-
-function toggleAuthEye() {
-  const inp = document.getElementById("authInput");
-  const eye = document.getElementById("authEye");
-  if (inp.type === "password") { inp.type = "text";     eye.textContent = "🙈"; }
-  else                         { inp.type = "password"; eye.textContent = "👁";  }
-}
-
-checkAuth(); // runs immediately on load
-
 // ─── Brand profile (goes into Claude Project instructions once) ───────────────
 const BRAND_PROFILE = `You are the dedicated brand agent for Cheyla, a motherhood and lifestyle creator on Instagram.
 
