@@ -92,7 +92,7 @@ A two-part Cloudflare Pages deployment for Cheyla's personal brand site. The **m
 - When `hero.image` is set: renders `<img>` inside a styled rounded container
 - When empty: renders a placeholder "Suggested use" card with gradient background
 
-**Cloudflare Analytics:** Cloudflare Web Analytics beacon included in `<head>` (token: `9c99492e5cde4b209022837c0a86fc36`).
+**Cloudflare Analytics:** Cloudflare Web Analytics beacon included in `<head>` (token is intentionally public — read-only analytics beacon by design).
 
 ---
 
@@ -195,8 +195,8 @@ Same upload mechanism as post images, wired into the Hero section.
 ## Cloudflare Infrastructure
 
 ### Cloudflare Account
-- **Account ID:** `2284d3d1efba4925527ccb6c27474076`
 - **Account name:** CheyJTavarez.com
+- **Account ID:** stored in homeserver private repo → `docs/cheyla-site-ops.md`
 
 ### Pages Projects
 
@@ -366,7 +366,13 @@ Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline';
 
 ## Environment Variables
 
-Set in Cloudflare Pages dashboard under the `cheyla-admin` project:
+**Main site project** (cheylajtavarez.com):
+
+| Variable | Type | Value / Description |
+|----------|------|---------------------|
+| `WEB3FORMS_KEY` | Secret | Web3Forms access key — used server-side by `/api/contact` to submit forms. Never exposed to browser. |
+
+**Admin site project** (`cheyla-admin`):
 
 | Variable | Type | Value / Description |
 |----------|------|---------------------|
@@ -418,7 +424,7 @@ wrangler pages dev admin-site
 **Local secrets (create `admin-site/.dev.vars`):**
 ```
 GITHUB_TOKEN=ghp_...
-MEDIA_PUBLIC_URL=https://pub-153d283cb1a74c218cdb02c2e811b18e.r2.dev
+MEDIA_PUBLIC_URL=https://media.cheylajtavarez.com
 ```
 
 **Push to production:**

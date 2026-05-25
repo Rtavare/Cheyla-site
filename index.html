@@ -516,12 +516,12 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
       }
 
       // Contact form
-      initContactForm(c.contact?.form_key || '');
+      initContactForm();
 
       document.body.classList.add('ready');
     }
 
-    function initContactForm(formKey) {
+    function initContactForm() {
       const form   = document.getElementById('contact-form');
       const status = document.getElementById('form-status');
       if (!form) return;
@@ -534,25 +534,14 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
         status.className   = 'form-status';
         status.textContent = '';
 
-        if (!formKey) {
-          status.textContent = 'Contact form is not configured yet — please email directly.';
-          status.className   = 'form-status error';
-          btn.disabled    = false;
-          btn.textContent = 'Send message';
-          return;
-        }
-
         try {
-          const res = await fetch('https://api.web3forms.com/submit', {
+          const res = await fetch('/api/contact', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({
-              access_key: formKey,
-              name:       form.querySelector('[name="name"]').value,
-              email:      form.querySelector('[name="email"]').value,
-              message:    form.querySelector('[name="message"]').value,
-              subject:    'New message from cheylajtavarez.com',
-              from_name:  'Cheyla J Tavarez Website',
+              name:    form.querySelector('[name="name"]').value,
+              email:   form.querySelector('[name="email"]').value,
+              message: form.querySelector('[name="message"]').value,
             }),
           });
           const result = await res.json();
@@ -561,7 +550,7 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
             status.className   = 'form-status success';
             form.reset();
           } else {
-            throw new Error(result.message || 'Submission failed');
+            throw new Error(result.error || 'Submission failed');
           }
         } catch {
           status.textContent = 'Something went wrong. Please try emailing directly.';

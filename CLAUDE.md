@@ -9,7 +9,7 @@ This is a two-part Cloudflare Pages project for **cheylajtavarez.com**:
 | Main public site | `Cheyla-site/` (root) | `cheylajtavarez.com` | — |
 | Admin CMS | `Cheyla-site/admin-site/` | `admin.cheylajtavarez.com` | `cheyla-admin` |
 
-**Cloudflare account:** `2284d3d1efba4925527ccb6c27474076` (CheyJTavarez.com)  
+**Cloudflare account:** CheyJTavarez.com (account ID in homeserver private repo → `docs/cheyla-site-ops.md`)  
 **GitHub repo:** `Rtavare/Cheyla-site`  
 **Deployment:** Push to `main` → Cloudflare Pages auto-deploys both sites
 
@@ -58,7 +58,7 @@ This is a two-part Cloudflare Pages project for **cheylajtavarez.com**:
 ### Image Upload
 - Upload zone on each post and focus card (click or drag-and-drop)
 - `POST /api/upload` — uploads file to R2 bucket `cheyla-media`
-- Returns public URL: `https://pub-153d283cb1a74c218cdb02c2e811b18e.r2.dev/{key}`
+- Returns public URL: `https://media.cheylajtavarez.com/{key}`
 - Accepted types: `image/jpeg`, `image/png`, `image/webp`, `image/gif`, `image/svg+xml`, `video/mp4`, `video/webm`, `video/quicktime`
 - Max size: 50 MB
 
