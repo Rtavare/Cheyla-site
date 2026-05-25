@@ -226,7 +226,7 @@
     gap: 1rem;
   }
 
-  /* ── Cards (focus section, nav links, posts) ── */
+  /* ── Cards ── */
   .card-list { display: flex; flex-direction: column; gap: 1rem; }
 
   .editable-card {
@@ -270,6 +270,14 @@
   }
   .btn-add:hover { background: #f9dde5; border-style: solid; }
 
+  .btn-link {
+    background: none; border: none; padding: 0;
+    color: var(--rose-dark); font-size: 11px;
+    cursor: pointer; text-decoration: underline;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-link:hover { color: var(--rose-mid); }
+
   /* ── Toggle ── */
   .toggle-row {
     display: flex; align-items: center; justify-content: space-between;
@@ -298,6 +306,85 @@
 
   /* ── Divider ── */
   .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+  /* ── Upload zone ── */
+  .upload-zone {
+    position: relative;
+    border: 2px dashed var(--border-mid);
+    border-radius: 10px;
+    background: var(--warm-white);
+    min-height: 80px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    overflow: hidden;
+  }
+  .upload-zone:hover { border-color: var(--rose-mid); background: var(--rose-light); }
+  .upload-zone.uploading { opacity: 0.6; cursor: wait; }
+  .upload-zone.has-img { min-height: 0; border-style: solid; }
+  .upload-placeholder {
+    color: var(--faint); font-size: 13px;
+    display: flex; align-items: center; gap: 6px;
+    padding: 0.75rem;
+  }
+  .img-preview {
+    width: 100%; max-height: 220px;
+    object-fit: cover; border-radius: 8px;
+    display: block;
+  }
+  .upload-remove-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(0,0,0,0.55); color: #fff;
+    border: none; border-radius: 6px;
+    padding: 3px 8px; font-size: 11px;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: background 0.15s;
+  }
+  .upload-remove-btn:hover { background: rgba(192,57,43,0.85); }
+
+  /* ── Rich text editor ── */
+  .rte-wrap { border: 1px solid var(--border-mid); border-radius: 10px; overflow: hidden; }
+  .rte-wrap:focus-within { border-color: var(--rose-mid); }
+
+  .rte-toolbar {
+    display: flex; gap: 2px;
+    padding: 6px 8px;
+    background: var(--rose-light);
+    border-bottom: 1px solid var(--border);
+  }
+  .rte-btn {
+    padding: 3px 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: 13px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    transition: all 0.12s;
+    line-height: 1.4;
+  }
+  .rte-btn:hover { background: #f9dde5; border-color: var(--rose); }
+  .rte-btn b  { font-weight: 700; }
+  .rte-btn i  { font-style: italic; }
+
+  .rte-body {
+    width: 100%;
+    min-height: 160px;
+    padding: 10px 12px;
+    font-size: 14px; font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    background: var(--warm-white);
+    outline: none;
+    line-height: 1.7;
+    resize: vertical;
+    overflow-y: auto;
+  }
+  .rte-body[contenteditable]:empty::before {
+    content: attr(data-placeholder);
+    color: var(--faint);
+    pointer-events: none;
+  }
+  .rte-body a { color: var(--rose-dark); text-decoration: underline; }
 
   /* ── Toast ── */
   .toast {
@@ -546,7 +633,6 @@ let isDirty = false;
 async function init() {
   setStatus("loading", "Loading…");
   try {
-    // Try localStorage draft first
     const draft = localStorage.getItem("cheyla_cms_draft");
     if (draft) {
       content = JSON.parse(draft);
@@ -564,19 +650,16 @@ async function init() {
   }
 }
 
-// ─── Populate all form fields from content object ────────────────────────────
+// ─── Populate all form fields ─────────────────────────────────────────────────
 function populateForms() {
   const c = content;
 
-  // Site
   val("meta-title", c.meta?.title);
   val("meta-desc",  c.meta?.description);
 
-  // Nav
   val("nav-brand", c.nav?.brand);
   renderNavLinks(c.nav?.links || []);
 
-  // Hero
   val("hero-eyebrow",  c.hero?.eyebrow);
   val("hero-headline", c.hero?.headline);
   val("hero-lead",     c.hero?.lead);
@@ -587,24 +670,20 @@ function populateForms() {
   val("card-title",    c.hero?.card_title);
   val("card-body",     c.hero?.card_body);
 
-  // Focus
   val("focus-title", c.focus?.title);
   val("focus-intro", c.focus?.intro);
   renderFocusCards(c.focus?.cards || []);
 
-  // About
   val("about-quote", c.about?.quote);
   val("about-title", c.about?.title);
   val("about-body",  c.about?.body);
 
-  // Contact
   val("contact-title",     c.contact?.title);
   val("contact-intro",     c.contact?.intro);
   val("contact-email",     c.contact?.email);
   val("contact-instagram", c.contact?.instagram);
   val("contact-location",  c.contact?.location);
 
-  // Posts
   renderPosts(c.posts || []);
 }
 
@@ -613,7 +692,7 @@ function val(id, v) {
   if (el) el.value = v || "";
 }
 
-// ─── Collect all form values into content object ──────────────────────────────
+// ─── Collect content ──────────────────────────────────────────────────────────
 function collectContent() {
   return {
     meta: {
@@ -715,14 +794,36 @@ function renderFocusCards(cards) {
       </div>
       <div class="field">
         <label class="field-label">Body</label>
-        <textarea class="textarea" data-fc-body="${i}" oninput="markDirty()">${esc(c.body)}</textarea>
+        <div class="rte-wrap">
+          <div class="rte-toolbar">
+            <button class="rte-btn" onmousedown="event.preventDefault()" onclick="rteCmd('bold')" title="Bold"><b>B</b></button>
+            <button class="rte-btn" onmousedown="event.preventDefault()" onclick="rteCmd('italic')" title="Italic"><i>I</i></button>
+            <button class="rte-btn" onmousedown="event.preventDefault()" onclick="rteInsertLink()" title="Insert link">🔗 Link</button>
+          </div>
+          <div class="rte-body" contenteditable="true" data-fc-body="${i}"
+               data-placeholder="Short card description…"
+               oninput="markDirty()">${safeHtml(c.body)}</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Card Image <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <div class="upload-zone ${c.image ? 'has-img' : ''}" id="fc-img-zone-${i}"
+             onclick="triggerUpload('fc-img-input-${i}')">
+          ${c.image
+            ? `<img class="img-preview" src="${esc(c.image)}" alt="card image">
+               <button class="upload-remove-btn" onclick="event.stopPropagation();clearMedia('fc','${i}')">✕ Remove</button>`
+            : `<span class="upload-placeholder">📷 Click to upload image</span>`}
+          <input type="file" id="fc-img-input-${i}" accept="image/*" style="display:none"
+                 onchange="handleUpload(this,'fc','${i}')">
+        </div>
+        <input type="hidden" data-fc-image="${i}" value="${esc(c.image || '')}" />
       </div>
     </div>`).join("");
 }
 
 function addFocusCard() {
   const cards = collectFocusCards();
-  cards.push({ title: "", body: "" });
+  cards.push({ title: "", body: "", image: "" });
   renderFocusCards(cards);
   markDirty();
 }
@@ -737,7 +838,8 @@ function removeFocusCard(i) {
 function collectFocusCards() {
   return [...document.querySelectorAll("[data-fc-title]")].map((el, i) => ({
     title: el.value.trim(),
-    body:  document.querySelector(`[data-fc-body="${i}"]`)?.value.trim() || "",
+    body:  rteValue(`[data-fc-body="${i}"]`),
+    image: document.querySelector(`[data-fc-image="${i}"]`)?.value.trim() || "",
   }));
 }
 
@@ -750,30 +852,71 @@ function renderPosts(posts) {
           <span class="card-handle">${p.title ? esc(p.title) : `Post ${i + 1}`}</span>
           <button class="btn-remove" onclick="removePost(${i})">✕ Remove</button>
         </div>
+
         <div class="row-2">
           <div class="field">
             <label class="field-label">Title</label>
-            <input class="input" data-post-title="${i}" value="${esc(p.title)}" oninput="markDirty();updatePostHandle(${i})" />
+            <input class="input" data-post-title="${i}" value="${esc(p.title)}"
+                   oninput="markDirty();updatePostHandle(${i})" />
           </div>
           <div class="field">
             <label class="field-label">Date</label>
             <input class="input" type="date" data-post-date="${i}" value="${esc(p.date)}" oninput="markDirty()" />
           </div>
         </div>
+
         <div class="row-2">
           <div class="field">
             <label class="field-label">Category</label>
-            <input class="input" data-post-cat="${i}" value="${esc(p.category)}" placeholder="e.g. Faith, Family, Wellness" oninput="markDirty()" />
+            <input class="input" data-post-cat="${i}" value="${esc(p.category)}"
+                   placeholder="e.g. Faith, Family, Wellness" oninput="markDirty()" />
           </div>
           <div class="field">
             <label class="field-label">External Link <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
-            <input class="input" data-post-link="${i}" value="${esc(p.link)}" placeholder="https://…" oninput="markDirty()" />
+            <input class="input" data-post-link="${i}" value="${esc(p.link)}"
+                   placeholder="https://…" oninput="markDirty()" />
           </div>
         </div>
+
+        <!-- Featured image -->
+        <div class="field">
+          <label class="field-label">Featured Image <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+          <div class="upload-zone ${p.image ? 'has-img' : ''}" id="post-img-zone-${i}"
+               onclick="triggerUpload('post-img-input-${i}')">
+            ${p.image
+              ? `<img class="img-preview" src="${esc(p.image)}" alt="featured image">
+                 <button class="upload-remove-btn" onclick="event.stopPropagation();clearMedia('post','${i}')">✕ Remove</button>`
+              : `<span class="upload-placeholder">📷 Click to upload image</span>`}
+            <input type="file" id="post-img-input-${i}" accept="image/*" style="display:none"
+                   onchange="handleUpload(this,'post','${i}')">
+          </div>
+          <input type="hidden" data-post-image="${i}" value="${esc(p.image || '')}" />
+        </div>
+
+        <!-- Video URL -->
+        <div class="field">
+          <label class="field-label">Video URL <span style="font-weight:400;text-transform:none;letter-spacing:0">YouTube · Vimeo (optional)</span></label>
+          <input class="input" data-post-video="${i}" value="${esc(p.video_url || '')}"
+                 placeholder="https://youtube.com/watch?v=…" oninput="markDirty()" />
+          ${p.video_url ? `<p class="field-hint"><a href="${esc(p.video_url)}" target="_blank" rel="noopener">▶ Preview video ↗</a></p>` : ''}
+        </div>
+
+        <!-- Rich text body -->
         <div class="field">
           <label class="field-label">Body / Excerpt</label>
-          <textarea class="textarea textarea-lg" data-post-body="${i}" oninput="markDirty()">${esc(p.body)}</textarea>
+          <div class="rte-wrap">
+            <div class="rte-toolbar">
+              <button class="rte-btn" onmousedown="event.preventDefault()" onclick="rteCmd('bold')" title="Bold"><b>B</b></button>
+              <button class="rte-btn" onmousedown="event.preventDefault()" onclick="rteCmd('italic')" title="Italic"><i>I</i></button>
+              <button class="rte-btn" onmousedown="event.preventDefault()" onclick="rteInsertLink()" title="Insert link">🔗 Link</button>
+              <button class="rte-btn" onmousedown="event.preventDefault()" onclick="rteCmd('removeFormat')" title="Clear formatting" style="font-size:11px">✕ Clear</button>
+            </div>
+            <div class="rte-body" contenteditable="true" data-post-body="${i}"
+                 data-placeholder="Write your post or excerpt…"
+                 oninput="markDirty()">${safeHtml(p.body)}</div>
+          </div>
         </div>
+
         <div class="toggle-row">
           <span class="toggle-label">Published</span>
           <label class="toggle">
@@ -798,12 +941,13 @@ function addPost() {
     date:      new Date().toISOString().split("T")[0],
     category:  "",
     body:      "",
+    image:     "",
+    video_url: "",
     link:      "",
     published: false,
   });
   renderPosts(posts);
   markDirty();
-  // Scroll to new post
   const last = document.querySelector(`#post-${posts.length - 1}`);
   if (last) last.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -821,10 +965,125 @@ function collectPosts() {
     title:     el.value.trim(),
     date:      document.querySelector(`[data-post-date="${i}"]`)?.value || "",
     category:  document.querySelector(`[data-post-cat="${i}"]`)?.value.trim() || "",
-    body:      document.querySelector(`[data-post-body="${i}"]`)?.value.trim() || "",
+    body:      rteValue(`[data-post-body="${i}"]`),
+    image:     document.querySelector(`[data-post-image="${i}"]`)?.value.trim() || "",
+    video_url: document.querySelector(`[data-post-video="${i}"]`)?.value.trim() || "",
     link:      document.querySelector(`[data-post-link="${i}"]`)?.value.trim() || "",
     published: document.querySelector(`[data-post-pub="${i}"]`)?.checked || false,
   }));
+}
+
+// ─── Rich text editor helpers ─────────────────────────────────────────────────
+function rteCmd(cmd) {
+  document.execCommand(cmd, false, null);
+}
+
+function rteInsertLink() {
+  const url = prompt("Enter URL (e.g. https://example.com):");
+  if (url && url.trim()) {
+    document.execCommand("createLink", false, url.trim());
+  }
+}
+
+/** Get the current value of a rich text / contenteditable field. */
+function rteValue(selector) {
+  const el = document.querySelector(selector);
+  if (!el) return "";
+  // Normalise: if empty shell, return ""
+  const html = el.innerHTML.trim();
+  return html === "<br>" ? "" : html;
+}
+
+/**
+ * Convert plain text to safe HTML for loading into a contenteditable.
+ * If the text already contains HTML tags (previously saved as rich text)
+ * it is returned as-is. Plain text is escaped and newlines become <br>.
+ */
+function safeHtml(text) {
+  if (!text) return "";
+  if (/<[a-zA-Z]/.test(text)) return text; // already HTML
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br>");
+}
+
+// ─── Media upload helpers ─────────────────────────────────────────────────────
+function triggerUpload(inputId) {
+  document.getElementById(inputId)?.click();
+}
+
+async function handleUpload(inputEl, type, index) {
+  const file = inputEl.files?.[0];
+  if (!file) return;
+
+  const zoneId = type === "post"
+    ? `post-img-zone-${index}`
+    : `fc-img-zone-${index}`;
+  const hiddenSelector = type === "post"
+    ? `[data-post-image="${index}"]`
+    : `[data-fc-image="${index}"]`;
+
+  const zone = document.getElementById(zoneId);
+  if (zone) {
+    zone.classList.add("uploading");
+    zone.innerHTML = `<span class="upload-placeholder">⏳ Uploading…</span>`;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || "Upload failed");
+
+    // Store URL in the hidden input
+    const hidden = document.querySelector(hiddenSelector);
+    if (hidden) hidden.value = data.url;
+
+    // Update the zone preview
+    if (zone) {
+      zone.classList.remove("uploading");
+      zone.classList.add("has-img");
+      zone.innerHTML = `
+        <img class="img-preview" src="${data.url}" alt="uploaded image">
+        <button class="upload-remove-btn" onclick="event.stopPropagation();clearMedia('${type}','${index}')">✕ Remove</button>
+        <input type="file" id="${type === 'post' ? 'post' : 'fc'}-img-input-${index}" accept="image/*" style="display:none"
+               onchange="handleUpload(this,'${type}','${index}')">`;
+    }
+
+    markDirty();
+    showToast("Image uploaded successfully!", "green");
+  } catch (err) {
+    if (zone) {
+      zone.classList.remove("uploading");
+      zone.classList.remove("has-img");
+      zone.innerHTML = `<span class="upload-placeholder">⚠️ Upload failed — click to retry</span>
+        <input type="file" id="${type === 'post' ? 'post' : 'fc'}-img-input-${index}" accept="image/*" style="display:none"
+               onchange="handleUpload(this,'${type}','${index}')">`;
+    }
+    showToast("Upload failed: " + err.message, "red");
+  }
+}
+
+function clearMedia(type, index) {
+  const zoneId       = type === "post" ? `post-img-zone-${index}` : `fc-img-zone-${index}`;
+  const hiddenSel    = type === "post" ? `[data-post-image="${index}"]` : `[data-fc-image="${index}"]`;
+  const inputId      = type === "post" ? `post-img-input-${index}` : `fc-img-input-${index}`;
+
+  const hidden = document.querySelector(hiddenSel);
+  if (hidden) hidden.value = "";
+
+  const zone = document.getElementById(zoneId);
+  if (zone) {
+    zone.classList.remove("has-img");
+    zone.innerHTML = `<span class="upload-placeholder">📷 Click to upload image</span>
+      <input type="file" id="${inputId}" accept="image/*" style="display:none"
+             onchange="handleUpload(this,'${type}','${index}')">`;
+  }
+  markDirty();
 }
 
 // ─── Dirty state / autosave ───────────────────────────────────────────────────
@@ -852,10 +1111,7 @@ async function publish() {
     });
 
     const data = await res.json();
-
-    if (!res.ok || !data.success) {
-      throw new Error(data.error || "Unknown error");
-    }
+    if (!res.ok || !data.success) throw new Error(data.error || "Unknown error");
 
     content = draft;
     localStorage.removeItem("cheyla_cms_draft");
