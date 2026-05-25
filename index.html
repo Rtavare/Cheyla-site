@@ -169,6 +169,8 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
 
     .card h3 { margin-top: 0; margin-bottom: 0.5rem; font-size: 1.1rem; }
     .card p  { color: var(--muted); margin: 0; }
+    .card-body-html { color: var(--muted); }
+    .card-body-html a { color: var(--accent-dark); text-decoration: underline; }
 
     .about-grid {
       display: grid;
@@ -406,8 +408,9 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
         document.getElementById('focus-cards').innerHTML = (c.focus.cards || [])
           .map(card => `
             <article class="card">
+              ${card.image ? `<img src="${esc(card.image)}" alt="${esc(card.title)}" style="width:100%;border-radius:16px;margin-bottom:0.75rem;object-fit:cover;max-height:180px;" onerror="this.style.display='none'">` : ''}
               <h3>${esc(card.title)}</h3>
-              <p>${esc(card.body)}</p>
+              <div class="card-body-html">${card.body || ''}</div>
             </article>`).join('');
       }
 
@@ -423,11 +426,29 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
         set('contact-title', c.contact.title);
         set('contact-intro', c.contact.intro);
         const details = [];
-        if (c.contact.email)     details.push(`<p><strong>Email:</strong> ${esc(c.contact.email)}</p>`);
-        if (c.contact.instagram) details.push(`<p><strong>Instagram:</strong> ${esc(c.contact.instagram)}</p>`);
+        if (c.contact.email)     details.push(`<p><strong>Email:</strong> <a href="mailto:${esc(c.contact.email)}" style="color:var(--accent-dark)">${esc(c.contact.email)}</a></p>`);
+        if (c.contact.instagram) details.push(`<p><strong>Instagram:</strong> <a href="https://instagram.com/${esc(c.contact.instagram.replace(/^@/,''))}" target="_blank" rel="noopener" style="color:var(--accent-dark)">${esc(c.contact.instagram)}</a></p>`);
         if (c.contact.location)  details.push(`<p><strong>Location:</strong> ${esc(c.contact.location)}</p>`);
         document.getElementById('contact-details').innerHTML =
           details.length ? details.join('') : '<p style="color:var(--muted)">Add your contact details in the CMS.</p>';
+
+        // Wire contact form to mailto when email is set
+        const contactEmail = c.contact.email;
+        if (contactEmail) {
+          const form = document.querySelector('#contact form');
+          const btn  = document.querySelector('#contact form button');
+          if (form && btn) {
+            btn.addEventListener('click', () => {
+              const name    = form.querySelector('input[type="text"]')?.value || '';
+              const replyTo = form.querySelector('input[type="email"]')?.value || '';
+              const message = form.querySelector('textarea')?.value || '';
+              if (!message.trim()) { btn.textContent = 'Please write a message'; setTimeout(() => btn.textContent = 'Send message', 2000); return; }
+              const subject = encodeURIComponent(`Message from ${name || 'your website'}`);
+              const body    = encodeURIComponent(`From: ${name}\nEmail: ${replyTo}\n\n${message}`);
+              window.location.href = `mailto:${contactEmail}?subject=${subject}&body=${body}`;
+            });
+          }
+        }
       }
 
       // Posts

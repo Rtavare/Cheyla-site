@@ -421,8 +421,9 @@
     </div>
     <div class="topbar-right">
       <span class="status-badge status-loading" id="statusBadge">Loading…</span>
+      <button class="btn-preview" id="discardBtn" onclick="discardDraft()" style="display:none" title="Revert to published content">↩ Discard</button>
       <a class="btn-preview" href="https://cheylajtavarez.com" target="_blank" rel="noopener">↗ Preview site</a>
-      <button class="btn-publish" id="publishBtn" onclick="publish()" disabled>Publish</button>
+      <button class="btn-publish" id="publishBtn" onclick="publish()" disabled title="Publish (⌘↵ / Ctrl↵)">Publish</button>
     </div>
   </header>
 
@@ -454,13 +455,13 @@
       </div>
       <div class="field">
         <label class="field-label">Page Title</label>
-        <input class="input" id="meta-title" placeholder="Cheyla J Tavarez" oninput="markDirty()" />
-        <p class="field-hint">Shown in the browser tab and Google search results.</p>
+        <input class="input" id="meta-title" placeholder="Cheyla J Tavarez" oninput="markDirty();updateCharCount('meta-title','meta-title-count',60)" />
+        <p class="field-hint">Shown in the browser tab and Google search results. <span id="meta-title-count" style="float:right;font-variant-numeric:tabular-nums">0/60</span></p>
       </div>
       <div class="field">
         <label class="field-label">Meta Description</label>
-        <textarea class="textarea" id="meta-desc" rows="3" placeholder="Personal website for Cheyla J Tavarez." oninput="markDirty()"></textarea>
-        <p class="field-hint">~160 characters. Shown under your page title in Google.</p>
+        <textarea class="textarea" id="meta-desc" rows="3" placeholder="Personal website for Cheyla J Tavarez." oninput="markDirty();updateCharCount('meta-desc','meta-desc-count',160)"></textarea>
+        <p class="field-hint">~160 characters. Shown under your page title in Google. <span id="meta-desc-count" style="float:right;font-variant-numeric:tabular-nums">0/160</span></p>
       </div>
     </div>
 
@@ -637,6 +638,8 @@ async function init() {
     if (draft) {
       content = JSON.parse(draft);
       setStatus("draft", "Unsaved draft");
+      isDirty = true;
+      document.getElementById("discardBtn").style.display = "";
     } else {
       const res = await fetch(CONTENT_URL + "?t=" + Date.now());
       content = await res.json();
@@ -685,6 +688,10 @@ function populateForms() {
   val("contact-location",  c.contact?.location);
 
   renderPosts(c.posts || []);
+
+  // Sync character counters after forms are populated
+  updateCharCount("meta-title", "meta-title-count", 60);
+  updateCharCount("meta-desc",  "meta-desc-count",  160);
 }
 
 function val(id, v) {
@@ -1086,12 +1093,33 @@ function clearMedia(type, index) {
   markDirty();
 }
 
+// ─── Character counters ───────────────────────────────────────────────────────
+function updateCharCount(fieldId, counterId, max) {
+  const el      = document.getElementById(fieldId);
+  const counter = document.getElementById(counterId);
+  if (!el || !counter) return;
+  const len = el.value.length;
+  counter.textContent  = `${len}/${max}`;
+  counter.style.color  = len > max ? "var(--red)" : len > max * 0.9 ? "#b45309" : "var(--faint)";
+}
+
+// ─── Discard draft ────────────────────────────────────────────────────────────
+async function discardDraft() {
+  if (!confirm("Discard all unsaved changes and reload the published content?")) return;
+  localStorage.removeItem("cheyla_cms_draft");
+  isDirty = false;
+  document.getElementById("discardBtn").style.display = "none";
+  content = null;
+  await init();
+}
+
 // ─── Dirty state / autosave ───────────────────────────────────────────────────
 function markDirty() {
   isDirty = true;
   const draft = collectContent();
   localStorage.setItem("cheyla_cms_draft", JSON.stringify(draft));
   setStatus("draft", "Unsaved changes");
+  document.getElementById("discardBtn").style.display = "";
 }
 
 // ─── Publish ──────────────────────────────────────────────────────────────────
@@ -1161,6 +1189,15 @@ function esc(s) {
 // ─── Warn on unsaved changes ──────────────────────────────────────────────────
 window.addEventListener("beforeunload", e => {
   if (isDirty) e.returnValue = "You have unpublished changes.";
+});
+
+// ─── Keyboard shortcut: Cmd/Ctrl+Enter → Publish ─────────────────────────────
+document.addEventListener("keydown", e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+    e.preventDefault();
+    const btn = document.getElementById("publishBtn");
+    if (!btn.disabled) publish();
+  }
 });
 
 init();
