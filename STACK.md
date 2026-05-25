@@ -1,6 +1,6 @@
 # cheylajtavarez.com — Full Stack Reference
 
-> Last updated: May 2025  
+> Last updated: May 2026  
 > Author: Ricardo Tavarez (rtavare)  
 > Repo: [github.com/Rtavare/Cheyla-site](https://github.com/Rtavare/Cheyla-site)
 
@@ -212,7 +212,7 @@ Both deploy from: `github.com/Rtavare/Cheyla-site` (branch: `main`)
 | Property | Value |
 |----------|-------|
 | Bucket name | `cheyla-media` |
-| Public dev URL | `https://pub-153d283cb1a74c218cdb02c2e811b18e.r2.dev` |
+| Custom domain | `https://media.cheylajtavarez.com` |
 | Binding name | `MEDIA_BUCKET` |
 | Bound to | `cheyla-admin` Pages project |
 
@@ -281,7 +281,7 @@ Uploads a media file to R2.
 | Accepted types | JPEG, PNG, WebP, GIF, SVG, MP4, WebM, QuickTime |
 | Max size | 50 MB |
 | Key format | `{Date.now()}-{sanitized-filename}` |
-| Public URL | `https://pub-153d283cb1a74c218cdb02c2e811b18e.r2.dev/{key}` |
+| Public URL | `https://media.cheylajtavarez.com/{key}` |
 | Returns | `{ success, url, key }` |
 
 ### `GET /api/media/*` — `media/[[path]].js`
@@ -319,7 +319,7 @@ Proxies R2 files for admin-side preview only.
 1. Cheyla drags/drops or clicks to upload a photo in the CMS
 2. POST /api/upload (multipart form)
 3. File stored in R2: cheyla-media bucket
-4. Public URL returned: https://pub-153d283cb1a74c218cdb02c2e811b18e.r2.dev/{key}
+4. Public URL returned: https://media.cheylajtavarez.com/{key}
 5. URL stored in content.json hero.image (or post.image, card.image)
 6. On Publish: URL is committed to GitHub → main site renders the image
 ```
@@ -372,7 +372,7 @@ Set in Cloudflare Pages dashboard under the `cheyla-admin` project:
 |----------|------|---------------------|
 | `GITHUB_TOKEN` | Secret | Classic PAT with `repo` scope — used to read/write `content.json` via GitHub API. Rotate periodically. |
 | `MEDIA_BUCKET` | R2 Binding | R2 bucket `cheyla-media` — used for image uploads and draft storage |
-| `MEDIA_PUBLIC_URL` | Plain text | `https://pub-153d283cb1a74c218cdb02c2e811b18e.r2.dev` — base URL for public R2 media links |
+| `MEDIA_PUBLIC_URL` | Plain text | `https://media.cheylajtavarez.com` — custom CDN domain for public R2 media links |
 
 ---
 
@@ -435,11 +435,8 @@ git push origin main
 
 ### Active TODOs
 
-- [ ] **Post images on main site** — render `post.image` as a featured image in the posts grid
-- [ ] **Video embeds on main site** — render `post.video_url` as a YouTube/Vimeo embed on post cards
-- [ ] **Focus card images on main site** — render `card.image` in the 3-column highlights grid
-- [ ] **Custom media domain** — move from R2 public dev URL (`*.r2.dev`) to a custom CDN domain for production
-- [ ] **Rotate GITHUB_TOKEN** — periodic PAT rotation in Cloudflare Pages env vars
+- [ ] **Video full embeds** — render YouTube/Vimeo iframe on a dedicated post detail page (currently shows as a "Watch" link on cards — good enough until post pages exist)
+- [ ] **Rotate GITHUB_TOKEN every 90 days** — next rotation due ~August 2026
 
 ### Completed
 
@@ -452,3 +449,7 @@ git push origin main
 - [x] Rich text editor for post bodies (Bold, Italic, Link)
 - [x] Dynamic posts grid on main site (hidden when empty)
 - [x] Graceful degradation (site renders even if content.json fetch fails)
+- [x] Post and focus card images render on main site
+- [x] Contact form wired to Web3Forms (sends to inbox)
+- [x] Custom media domain — `media.cheylajtavarez.com` (R2 custom domain, replaces r2.dev URL)
+- [x] GITHUB_TOKEN rotated (May 2026)

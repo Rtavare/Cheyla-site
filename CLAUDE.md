@@ -96,15 +96,15 @@ Commits `content.json` to GitHub.
 ## Cloudflare Configuration
 
 ### R2 Bucket: `cheyla-media`
-- **Public Development URL:** `https://pub-153d283cb1a74c218cdb02c2e811b18e.r2.dev`
+- **Custom Domain:** `https://media.cheylajtavarez.com`
 - Bound to `cheyla-admin` Pages project as `MEDIA_BUCKET`
 
 ### Pages Environment Variables (`cheyla-admin` project)
 | Variable | Value |
 |----------|-------|
 | `MEDIA_BUCKET` | R2 binding → `cheyla-media` |
-| `MEDIA_PUBLIC_URL` | `https://pub-153d283cb1a74c218cdb02c2e811b18e.r2.dev` |
-| `GITHUB_TOKEN` | Classic PAT with `repo` scope (rotate periodically) |
+| `MEDIA_PUBLIC_URL` | `https://media.cheylajtavarez.com` |
+| `GITHUB_TOKEN` | Classic PAT with `repo` scope (rotate every 90 days — next: ~Aug 2026) |
 
 ### Zero Trust Access
 - Policy on `admin.cheylajtavarez.com` — OTP email authentication
@@ -137,7 +137,7 @@ Cheyla-site/
 
 - Repo lives at: `C:\Users\produ\OneDrive - University of Phoenix\Desktop\Cheyla's Site\Cheyla-site`
 - Use `wrangler pages dev admin-site` to test Pages Functions locally
-- Set `MEDIA_BUCKET` and `MEDIA_PUBLIC_URL` in `.dev.vars` for local R2 testing
+- Set `MEDIA_BUCKET` and `MEDIA_PUBLIC_URL=https://media.cheylajtavarez.com` in `.dev.vars` for local R2 testing
 - GitHub Desktop credentials: stored in Windows Credential Manager
 - To push: `git push origin main` from the `Cheyla-site` directory
 
@@ -145,8 +145,12 @@ Cheyla-site/
 
 ## TODO / Next Steps
 
-- [ ] Wire `image` and `video_url` fields from `content.json` into the main site's display templates
-- [ ] Add `<img>` rendering for post featured images on the main site
-- [ ] Add YouTube/Vimeo embed rendering for `video_url` on post pages
-- [ ] Consider moving from R2 public dev URL to a custom domain for media (production-grade CDN)
-- [ ] Rotate `GITHUB_TOKEN` in Cloudflare Pages env vars periodically
+- [ ] Add YouTube/Vimeo iframe embed on a dedicated post detail page (currently shows as a "Watch" link)
+- [ ] Rotate `GITHUB_TOKEN` every 90 days — next rotation ~August 2026
+
+## Recently Completed
+
+- [x] Post and focus card images render on main site
+- [x] Contact form wired to Web3Forms (submits to inbox)
+- [x] Custom media domain — `media.cheylajtavarez.com` (replaces r2.dev URL)
+- [x] GITHUB_TOKEN rotated (May 2026)
