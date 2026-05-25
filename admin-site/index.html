@@ -92,6 +92,33 @@
   .status-error   { background: var(--red-bg); color: var(--red); }
   .status-loading { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
 
+  .btn-save {
+    padding: 8px 16px;
+    background: transparent;
+    color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-save:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
+  .btn-save {
+    padding: 8px 16px;
+    background: transparent;
+    color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-save:hover    { background: rgba(255,255,255,0.08); color: #fff; }
+  .btn-save:disabled { opacity: 0.4; cursor: default; }
+
   .btn-publish {
     padding: 8px 20px;
     background: var(--rose-dark);
@@ -422,7 +449,9 @@
     <div class="topbar-right">
       <span class="status-badge status-loading" id="statusBadge">Loading…</span>
       <a class="btn-preview" href="https://cheylajtavarez.com" target="_blank" rel="noopener">↗ Preview site</a>
-      <button class="btn-publish" id="publishBtn" onclick="publish()" disabled>Publish</button>
+      <button class="btn-save"    id="saveBtn"    onclick="saveDraft()">Save draft</button>
+      <button class="btn-save"    id="saveBtn"    onclick="saveDraft()" disabled>Save draft</button>
+      <button class="btn-publish" id="publishBtn" onclick="publish()"    disabled>Publish</button>
     </div>
   </header>
 
@@ -625,29 +654,62 @@
 
 <script>
 // ─── State ────────────────────────────────────────────────────────────────────
-const CONTENT_URL = "/api/content";
-let content = null;
-let isDirty = false;
+let content      = null;
+let isDirty      = false;
+let autoSaveTimer;
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 async function init() {
   setStatus("loading", "Loading…");
   try {
-    const draft = localStorage.getItem("cheyla_cms_draft");
-    if (draft) {
-      content = JSON.parse(draft);
+    // 1. Check R2 for an in-progress draft
+    const draftRes  = await fetch("/api/draft?t=" + Date.now());
+    const draftData = await draftRes.json();
+
+    if (draftData.draft) {
+      content = draftData.draft;
+      populateForms();
+      enableButtons();
       setStatus("draft", "Unsaved draft");
-    } else {
-      const res = await fetch(CONTENT_URL + "?t=" + Date.now());
-      content = await res.json();
-      setStatus("saved", "Up to date");
+      showToast("Resuming your saved draft — hit Publish when ready.", "green");
+      return;
     }
+
+    // 2. No draft — load published content from GitHub
+    const contentRes = await fetch("/api/content?t=" + Date.now());
+    content = await contentRes.json();
     populateForms();
-    document.getElementById("publishBtn").disabled = false;
+    enableButtons();
+    setStatus("saved", "Up to date");
+
   } catch (e) {
-    setStatus("error", "Load failed");
-    showToast("Failed to load content. Check your connection.", "red");
+    // 3. Fallback — start blank so she can still edit and publish
+    content = emptyContent();
+    populateForms();
+    enableButtons();
+    setStatus("draft", "Starting fresh");
+    showToast("Could not load content — you can still edit and publish.", "red");
   }
+}
+
+function enableButtons() {
+  document.getElementById("publishBtn").disabled = false;
+  document.getElementById("saveBtn").disabled    = false;
+}
+
+function emptyContent() {
+  return {
+    meta:    { title: "", description: "" },
+    nav:     { brand: "", links: [] },
+    hero:    { eyebrow: "", headline: "", lead: "",
+               cta_primary: { label: "", href: "" },
+               cta_secondary: { label: "", href: "" },
+               card_title: "", card_body: "" },
+    focus:   { title: "", intro: "", cards: [] },
+    about:   { quote: "", title: "", body: "" },
+    contact: { title: "", intro: "", email: "", instagram: "", location: "" },
+    posts:   [],
+  };
 }
 
 // ─── Populate all form fields ─────────────────────────────────────────────────
@@ -1086,15 +1148,37 @@ function clearMedia(type, index) {
   markDirty();
 }
 
-// ─── Dirty state / autosave ───────────────────────────────────────────────────
+// ─── Dirty state — debounced auto-save to R2 ─────────────────────────────────
 function markDirty() {
   isDirty = true;
-  const draft = collectContent();
-  localStorage.setItem("cheyla_cms_draft", JSON.stringify(draft));
   setStatus("draft", "Unsaved changes");
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(saveDraft, 3000); // auto-save after 3s of inactivity
 }
 
-// ─── Publish ──────────────────────────────────────────────────────────────────
+// ─── Save draft to R2 (no GitHub commit) ─────────────────────────────────────
+async function saveDraft() {
+  clearTimeout(autoSaveTimer);
+  const draft = collectContent();
+  setStatus("loading", "Saving draft…");
+  try {
+    const res = await fetch("/api/draft", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ content: draft }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || "Save failed");
+    isDirty = true; // still dirty until published
+    setStatus("draft", "Draft saved");
+    showToast("Draft saved — hit Publish when you're ready to go live.", "green");
+  } catch (err) {
+    setStatus("error", "Draft save failed");
+    showToast(`Could not save draft: ${err.message}`, "red");
+  }
+}
+
+// ─── Publish (commits to GitHub → triggers site rebuild) ─────────────────────
 async function publish() {
   const btn = document.getElementById("publishBtn");
   btn.disabled = true;
@@ -1114,10 +1198,11 @@ async function publish() {
     if (!res.ok || !data.success) throw new Error(data.error || "Unknown error");
 
     content = draft;
-    localStorage.removeItem("cheyla_cms_draft");
     isDirty = false;
     setStatus("saved", "Published ✓");
     showToast("Published! Your site will update in ~30 seconds.", "green");
+    // Clear the R2 draft now that it's live
+    fetch("/api/draft", { method: "DELETE" }).catch(() => {});
 
   } catch (err) {
     setStatus("error", "Publish failed");
