@@ -1,45 +1,72 @@
 {
   "meta": {
     "title": "Cheyla J Tavarez",
-    "description": "Personal website for Cheyla J Tavarez."
+    "description": "Motherhood & lifestyle content for women building a beautiful family life without the perfection pressure. Faith, wellness, real moments, and everyday joy."
   },
   "nav": {
     "brand": "CHEYLA J TAVAREZ",
     "links": [
-      { "label": "About",   "href": "#about" },
-      { "label": "Focus",   "href": "#focus" },
-      { "label": "Contact", "href": "#contact" }
+      {
+        "label": "About",
+        "href": "#about"
+      },
+      {
+        "label": "Focus",
+        "href": "#focus"
+      },
+      {
+        "label": "Contact",
+        "href": "#contact"
+      }
     ]
   },
   "hero": {
-    "eyebrow":      "Welcome to cheylajtavarez.com",
-    "headline":     "A calm, modern home for your story, work, and voice.",
-    "lead":         "This starter homepage is designed to feel warm, personal, and polished. Replace this copy with your real introduction, mission, and the message you want visitors to remember.",
-    "cta_primary":  { "label": "Get in touch", "href": "#contact" },
-    "cta_secondary":{ "label": "Learn more",   "href": "#about"   },
-    "card_title":   "Suggested use",
-    "card_body":    "Use this space for a featured image, short bio, latest message, or a highlighted offer."
+    "eyebrow": "Welcome to cheylajtavarez.com",
+    "headline": "A calm, modern home for your story, work, and voice.",
+    "lead": "This starter homepage is designed to feel warm, personal, and polished. Replace this copy with your real introduction, mission, and the message you want visitors to remember.",
+    "cta_primary": {
+      "label": "Get in touch",
+      "href": "#contact"
+    },
+    "cta_secondary": {
+      "label": "Learn more",
+      "href": "#about"
+    },
+    "card_title": "Suggested use",
+    "card_body": "Use this space for a featured image, short bio, latest message, or a highlighted offer."
   },
   "focus": {
     "title": "What this site can highlight",
     "intro": "Keep the first version simple. Start with three core themes so visitors immediately understand who you are and what the site is for.",
     "cards": [
-      { "title": "Your message",   "body": "Share your purpose, your values, and the heart behind the work you do." },
-      { "title": "Your story",     "body": "Introduce yourself with a short, honest bio that feels human and memorable." },
-      { "title": "Your next step", "body": "Give visitors one clear action to take — contact you, follow you, or book time." }
+      {
+        "title": "Your message",
+        "body": "Share your purpose, your values, and the heart behind the work you do.",
+        "image": ""
+      },
+      {
+        "title": "Your story",
+        "body": "Introduce yourself with a short, honest bio that feels human and memorable.",
+        "image": ""
+      },
+      {
+        "title": "Your next step",
+        "body": "Give visitors one clear action to take — contact you, follow you, or book time.",
+        "image": ""
+      }
     ]
   },
   "about": {
     "quote": "A beautiful website does not need to be crowded. It needs to be clear.",
     "title": "About",
-    "body":  "This section is where you can introduce Cheyla in a more personal way. Talk about your background, what you care about, who you help, or what kind of content and experience people can expect when they visit this site."
+    "body": "This section is where you can introduce Cheyla in a more personal way. Talk about your background, what you care about, who you help, or what kind of content and experience people can expect when they visit this site."
   },
   "contact": {
-    "title":     "Contact",
-    "intro":     "Reach out — I'd love to hear from you.",
-    "email":     "",
+    "title": "Contact",
+    "intro": "Reach out — I'd love to hear from you.",
+    "email": "",
     "instagram": "",
-    "location":  ""
+    "location": ""
   },
   "posts": []
 }
