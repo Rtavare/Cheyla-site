@@ -22,7 +22,7 @@
   },
   "hero": {
     "eyebrow": "Welcome to cheylajtavarez.com",
-    "headline": "A calm, modern home for your story, work, and voice.",
+    "headline": "Beautiful Life. Real Motherhood.",
     "lead": "This starter homepage is designed to feel warm, personal, and polished. Replace this copy with your real introduction, mission, and the message you want visitors to remember.",
     "cta_primary": {
       "label": "Get in touch",
@@ -32,7 +32,6 @@
       "label": "Learn more",
       "href": "#about"
     },
-    "image": "",
     "card_title": "Suggested use",
     "card_body": "Use this space for a featured image, short bio, latest message, or a highlighted offer."
   },
@@ -52,7 +51,7 @@
       },
       {
         "title": "Your next step",
-        "body": "Give visitors one clear action to take — contact you, follow you, or book time.",
+        "body": "Give visitors one clear action to take â contact you, follow you, or book time.",
         "image": ""
       }
     ]
@@ -64,7 +63,7 @@
   },
   "contact": {
     "title": "Contact",
-    "intro": "Reach out — I'd love to hear from you.",
+    "intro": "Reach out â I'd love to hear from you.",
     "email": "cheyla@cheylajtavarez.com",
     "instagram": "@cheylajtavarez",
     "location": ""
