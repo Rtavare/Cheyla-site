@@ -30,6 +30,66 @@ Source for [cheylajtavarez.com](https://cheylajtavarez.com) — a personal brand
 
 ---
 
+## Architecture
+
+```mermaid
+flowchart TD
+    subgraph GH["GitHub — Rtavare/Cheyla-site"]
+        GH_CODE["📁 Code Repository"]
+        GH_JSON["📄 content.json"]
+    end
+
+    GH_CODE -->|"push to main"| CP
+
+    subgraph CP["Cloudflare Pages — Build & Deploy"]
+        CP_MAIN["cheylajtavarez.com"]
+        CP_ADMIN["cheyla-admin\nadmin.cheylajtavarez.com"]
+    end
+
+    CP --> INFRA
+
+    subgraph INFRA["Cloudflare Infrastructure"]
+        direction LR
+        DNS["DNS"] ~~~ CDN["CDN"] ~~~ CACHE["Cache"] ~~~ WAF["WAF"] ~~~ DDOS["DDoS Protection"]
+    end
+
+    INFRA --> APP
+
+    subgraph APP["Application Layer"]
+        direction LR
+        subgraph CMS["CMS Admin"]
+            AUTH["Auth Service\nZero Trust OTP"]
+            APIS["API Services\n/api/content\n/api/publish\n/api/draft\n/api/upload"]
+        end
+        subgraph SITE["Public Site"]
+            HTML["Static HTML/CSS/JS\nRenders from content.json"]
+        end
+    end
+
+    APP --> STORAGE
+
+    subgraph STORAGE["Storage"]
+        direction LR
+        R2["☁️ R2 Object Storage\ncheyla-media\nmedia.cheylajtavarez.com"]
+        GH_JSON2["📄 content.json\nGitHub — source of truth"]
+    end
+
+    APIS -->|"commit on Publish"| GH_JSON
+    GH_JSON -->|"triggers rebuild"| CP_MAIN
+    APIS <-->|"drafts + media"| R2
+    R2 -->|"media.cheylajtavarez.com"| HTML
+
+    STORAGE --> USERS
+
+    subgraph USERS["End Users"]
+        direction LR
+        PUB["🌐 Visitors\ncheylajtavarez.com"]
+        ADMIN["👤 Cheyla\nadmin.cheylajtavarez.com"]
+    end
+```
+
+---
+
 ## How content publishing works
 
 1. Cheyla logs into `admin.cheylajtavarez.com` via OTP email code
