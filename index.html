@@ -222,6 +222,35 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
 
     textarea { min-height: 150px; resize: vertical; }
 
+    /* Card images (focus section) */
+    .card-img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 14px;
+      margin-bottom: 1rem;
+    }
+
+    /* Post card images */
+    .post-card-img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 14px;
+    }
+
+    .post-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    /* Form feedback */
+    .form-status {
+      font-size: 0.9rem;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      display: none;
+    }
+    .form-status.success { display: block; background: #edf7ed; color: #2e6b30; }
+    .form-status.error   { display: block; background: #fdecea; color: #8b2020; }
+
     /* Posts */
     .posts-grid {
       display: grid;
@@ -338,11 +367,12 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
         <p class="section-copy"   id="contact-intro"></p>
         <div class="contact-wrap">
           <div class="card">
-            <form>
-              <input type="text"  placeholder="Your name"    aria-label="Your name" />
-              <input type="email" placeholder="Your email"   aria-label="Your email" />
-              <textarea           placeholder="Your message" aria-label="Your message"></textarea>
-              <button class="btn btn-primary" type="button">Send message</button>
+            <form id="contact-form">
+              <input type="text"  name="name"    placeholder="Your name"    aria-label="Your name"    required />
+              <input type="email" name="email"   placeholder="Your email"   aria-label="Your email"   required />
+              <textarea           name="message" placeholder="Your message" aria-label="Your message" required></textarea>
+              <button class="btn btn-primary" type="submit">Send message</button>
+              <div id="form-status" class="form-status"></div>
             </form>
           </div>
           <div class="card">
@@ -438,6 +468,7 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
         document.getElementById('focus-cards').innerHTML = (c.focus.cards || [])
           .map(card => `
             <article class="card">
+              ${card.image ? `<img class="card-img" src="${esc(card.image)}" alt="${esc(card.title)}" loading="lazy" />` : ''}
               <h3>${esc(card.title)}</h3>
               <p>${esc(card.body)}</p>
             </article>`).join('');
@@ -470,17 +501,76 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
           .sort((a, b) => new Date(b.date) - new Date(a.date))
           .map(post => `
             <article class="post-card">
+              ${post.image ? `<img class="post-card-img" src="${esc(post.image)}" alt="${esc(post.title)}" loading="lazy" />` : ''}
               <div class="post-meta">
                 <span>${esc(new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }))}</span>
                 ${post.category ? `<span class="post-category">${esc(post.category)}</span>` : ''}
               </div>
               <h3 class="post-title">${esc(post.title)}</h3>
               <p class="post-body">${esc(post.body)}</p>
-              ${post.link ? `<a class="post-link" href="${esc(post.link)}" target="_blank" rel="noopener">Read more →</a>` : ''}
+              <div class="post-links">
+                ${post.link      ? `<a class="post-link" href="${esc(post.link)}"      target="_blank" rel="noopener">Read more →</a>` : ''}
+                ${post.video_url ? `<a class="post-link" href="${esc(post.video_url)}" target="_blank" rel="noopener">▶ Watch</a>`    : ''}
+              </div>
             </article>`).join('');
       }
 
+      // Contact form
+      initContactForm(c.contact?.form_key || '');
+
       document.body.classList.add('ready');
+    }
+
+    function initContactForm(formKey) {
+      const form   = document.getElementById('contact-form');
+      const status = document.getElementById('form-status');
+      if (!form) return;
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const btn = form.querySelector('button[type="submit"]');
+        btn.disabled    = true;
+        btn.textContent = 'Sending…';
+        status.className   = 'form-status';
+        status.textContent = '';
+
+        if (!formKey) {
+          status.textContent = 'Contact form is not configured yet — please email directly.';
+          status.className   = 'form-status error';
+          btn.disabled    = false;
+          btn.textContent = 'Send message';
+          return;
+        }
+
+        try {
+          const res = await fetch('https://api.web3forms.com/submit', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({
+              access_key: formKey,
+              name:       form.querySelector('[name="name"]').value,
+              email:      form.querySelector('[name="email"]').value,
+              message:    form.querySelector('[name="message"]').value,
+              subject:    'New message from cheylajtavarez.com',
+              from_name:  'Cheyla J Tavarez Website',
+            }),
+          });
+          const result = await res.json();
+          if (result.success) {
+            status.textContent = '✓ Message sent! I\'ll get back to you soon.';
+            status.className   = 'form-status success';
+            form.reset();
+          } else {
+            throw new Error(result.message || 'Submission failed');
+          }
+        } catch {
+          status.textContent = 'Something went wrong. Please try emailing directly.';
+          status.className   = 'form-status error';
+        } finally {
+          btn.disabled    = false;
+          btn.textContent = 'Send message';
+        }
+      });
     }
 
     fetch('/content.json')

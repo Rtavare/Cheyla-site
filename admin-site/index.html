@@ -651,6 +651,11 @@
         <label class="field-label">Location <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
         <input class="input" id="contact-location" placeholder="City, State" oninput="markDirty()" />
       </div>
+      <hr class="divider" />
+      <div class="field">
+        <label class="field-label">Contact Form Key <span style="font-weight:400;text-transform:none;letter-spacing:0">(Web3Forms access key — <a href="https://web3forms.com" target="_blank" rel="noopener" style="color:var(--accent)">get one free at web3forms.com</a>)</span></label>
+        <input class="input" id="contact-form-key" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" oninput="markDirty()" />
+      </div>
     </div>
 
     <!-- Posts -->
@@ -724,7 +729,7 @@ function emptyContent() {
                card_title: "", card_body: "" },
     focus:   { title: "", intro: "", cards: [] },
     about:   { quote: "", title: "", body: "" },
-    contact: { title: "", intro: "", email: "", instagram: "", location: "" },
+    contact: { title: "", intro: "", email: "", instagram: "", location: "", form_key: "" },
     posts:   [],
   };
 }
@@ -763,6 +768,7 @@ function populateForms() {
   val("contact-email",     c.contact?.email);
   val("contact-instagram", c.contact?.instagram);
   val("contact-location",  c.contact?.location);
+  val("contact-form-key",  c.contact?.form_key);
 
   renderPosts(c.posts || []);
 }
@@ -809,6 +815,7 @@ function collectContent() {
       email:     g("contact-email"),
       instagram: g("contact-instagram"),
       location:  g("contact-location"),
+      form_key:  g("contact-form-key"),
     },
     posts: collectPosts(),
   };
