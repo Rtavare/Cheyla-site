@@ -1,14 +1,19 @@
 /**
- * /api/draft — R2-backed draft storage
+ * /api/draft — KV-backed draft storage
  *
- * GET    /api/draft  → read draft.json from R2 (returns {draft:null} if none)
- * POST   /api/draft  → write content to draft.json in R2
- * DELETE /api/draft  → remove draft.json (called after successful publish)
+ * GET    /api/draft  → read draft from KV (returns {draft:null} if none)
+ * POST   /api/draft  → write content to KV
+ * DELETE /api/draft  → remove draft from KV (called after successful publish)
  *
- * Requires binding: MEDIA_BUCKET (R2 bucket: cheyla-media)
+ * Requires binding: DRAFT_KV (KV namespace: cheyla-drafts)
+ * Bound to: cheyla-admin Pages project → Settings → Functions → KV namespace bindings
+ *
+ * Previously used MEDIA_BUCKET (R2) which made draft.json publicly accessible
+ * at media.cheylajtavarez.com/draft.json. KV has no public URL — drafts are
+ * now private and only reachable through this Pages Function.
  */
 
-const DRAFT_KEY = "draft.json";
+const DRAFT_KEY = "draft";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -21,13 +26,13 @@ function json(data, status = 200) {
 export async function onRequestGet(context) {
   const { env } = context;
 
-  try {
-    const obj = await env.MEDIA_BUCKET.get(DRAFT_KEY);
-    if (!obj) return json({ draft: null });
+  if (!env.DRAFT_KV) {
+    return json({ error: "DRAFT_KV binding not configured" }, 500);
+  }
 
-    const text = await obj.text();
-    const data = JSON.parse(text);
-    return json({ draft: data });
+  try {
+    const data = await env.DRAFT_KV.get(DRAFT_KEY, { type: "json" });
+    return json({ draft: data ?? null });
   } catch (e) {
     return json({ error: `Failed to read draft: ${e.message}` }, 500);
   }
@@ -36,6 +41,10 @@ export async function onRequestGet(context) {
 // ── POST — save draft ─────────────────────────────────────────────────────────
 export async function onRequestPost(context) {
   const { request, env } = context;
+
+  if (!env.DRAFT_KV) {
+    return json({ error: "DRAFT_KV binding not configured" }, 500);
+  }
 
   let body;
   try {
@@ -50,11 +59,7 @@ export async function onRequestPost(context) {
   }
 
   try {
-    await env.MEDIA_BUCKET.put(
-      DRAFT_KEY,
-      JSON.stringify(content, null, 2),
-      { httpMetadata: { contentType: "application/json" } }
-    );
+    await env.DRAFT_KV.put(DRAFT_KEY, JSON.stringify(content));
     return json({ success: true, savedAt: new Date().toISOString() });
   } catch (e) {
     return json({ error: `Failed to save draft: ${e.message}` }, 500);
@@ -65,8 +70,12 @@ export async function onRequestPost(context) {
 export async function onRequestDelete(context) {
   const { env } = context;
 
+  if (!env.DRAFT_KV) {
+    return json({ error: "DRAFT_KV binding not configured" }, 500);
+  }
+
   try {
-    await env.MEDIA_BUCKET.delete(DRAFT_KEY);
+    await env.DRAFT_KV.delete(DRAFT_KEY);
     return json({ success: true });
   } catch (e) {
     return json({ error: `Failed to delete draft: ${e.message}` }, 500);

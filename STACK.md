@@ -53,12 +53,20 @@ A two-part Cloudflare Pages deployment for Cheyla's personal brand site. The **m
           └────────────┬────────────┘
                        │
           ┌────────────▼────────────┐
-          │   Cloudflare R2         │
-          │   Bucket: cheyla-media  │
-          │                         │
-          │  draft.json             │  ← auto-saved CMS drafts
-          │  {timestamp}-image.jpg  │  ← uploaded media files
-          └─────────────────────────┘
+          ├────────────────────────────────────────┤
+          │   Cloudflare KV                        │
+          │   Namespace: cheyla-drafts             │
+          │                                        │
+          │  "draft" key  ← CMS auto-save (private)│
+          └────────────────────────────────────────┘
+
+          ┌────────────────────────────────────────┐
+          │   Cloudflare R2                        │
+          │   Bucket: cheyla-media                 │
+          │   (media files only — public)          │
+          │                                        │
+          │  {timestamp}-image.jpg                 │
+          └────────────────────────────────────────┘
 ```
 
 ---
@@ -220,8 +228,7 @@ Both deploy from: `github.com/Rtavare/Cheyla-site` (branch: `main`)
 
 | Key pattern | Purpose |
 |-------------|---------|
-| `draft.json` | CMS auto-save draft (overwritten each save, deleted on Publish) |
-| `{timestamp}-{filename}` | Uploaded images and videos |
+| `{timestamp}-{filename}` | Uploaded images and videos (public) |
 
 ### Cloudflare Zero Trust Access
 
@@ -255,21 +262,22 @@ Commits `content.json` to GitHub.
 
 ### `GET /api/draft` — `draft.js`
 
-Reads `draft.json` from R2.
+Reads draft from KV namespace (`cheyla-drafts`).
 
 - Returns `{ draft: null }` if no draft exists
 - Returns `{ draft: <content_object> }` if a draft is saved
+- KV has no public URL — draft is never accessible outside this Function
 
 ### `POST /api/draft` — `draft.js`
 
-Saves current CMS state to `draft.json` in R2.
+Saves current CMS state to KV.
 
 - Called automatically every 3 seconds after any change
 - Overwrites previous draft (only one draft at a time)
 
 ### `DELETE /api/draft` — `draft.js`
 
-Removes `draft.json` from R2 after a successful Publish.
+Removes draft from KV after a successful Publish.
 
 ### `POST /api/upload` — `upload.js`
 
@@ -304,7 +312,7 @@ Proxies R2 files for admin-side preview only.
 3. She enters OTP → 24-hour session granted
 4. CMS init(): loads draft from R2, or falls back to content.json from GitHub
 5. She edits content / uploads photos
-6. Every 3 seconds of inactivity: auto-saved to R2 (draft.json)
+6. Every 3 seconds of inactivity: auto-saved to KV (private, no public URL)
 7. She clicks Publish:
    a. POST /api/publish → GitHub API writes content.json → commit created
    b. DELETE /api/draft → R2 draft cleared
@@ -377,8 +385,9 @@ Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline';
 | Variable | Type | Value / Description |
 |----------|------|---------------------|
 | `GITHUB_TOKEN` | Secret | Classic PAT with `repo` scope — used to read/write `content.json` via GitHub API. Rotate periodically. |
-| `MEDIA_BUCKET` | R2 Binding | R2 bucket `cheyla-media` — used for image uploads and draft storage |
+| `MEDIA_BUCKET` | R2 Binding | R2 bucket `cheyla-media` — media files only (images, videos) |
 | `MEDIA_PUBLIC_URL` | Plain text | `https://media.cheylajtavarez.com` — custom CDN domain for public R2 media links |
+| `DRAFT_KV` | KV Binding | KV namespace `cheyla-drafts` — private draft storage, no public URL |
 
 ---
 
