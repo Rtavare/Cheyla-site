@@ -35,57 +35,40 @@ Source for [cheylajtavarez.com](https://cheylajtavarez.com) — a personal brand
 ```mermaid
 flowchart TD
     subgraph GH["GitHub — Rtavare/Cheyla-site"]
-        GH_CODE["📁 Code Repository"]
-        GH_JSON["📄 content.json"]
+        GH_CODE["Code Repository"]
+        GH_JSON["content.json"]
     end
 
-    GH_CODE -->|"push to main"| CP
-
-    subgraph CP["Cloudflare Pages — Build & Deploy"]
-        CP_MAIN["cheylajtavarez.com"]
-        CP_ADMIN["cheyla-admin\nadmin.cheylajtavarez.com"]
+    subgraph CF_PAGES["Cloudflare Pages — Build & Deploy"]
+        CF_MAIN["cheylajtavarez.com"]
+        CF_ADMIN["admin.cheylajtavarez.com"]
     end
 
-    CP --> INFRA
-
-    subgraph INFRA["Cloudflare Infrastructure"]
-        direction LR
-        DNS["DNS"] ~~~ CDN["CDN"] ~~~ CACHE["Cache"] ~~~ WAF["WAF"] ~~~ DDOS["DDoS Protection"]
+    subgraph CF_INFRA["Cloudflare Infrastructure"]
+        INFRA["DNS · CDN · Cache · WAF · DDoS Protection"]
     end
-
-    INFRA --> APP
 
     subgraph APP["Application Layer"]
-        direction LR
-        subgraph CMS["CMS Admin"]
-            AUTH["Auth Service\nZero Trust OTP"]
-            APIS["API Services\n/api/content\n/api/publish\n/api/draft\n/api/upload"]
-        end
-        subgraph SITE["Public Site"]
-            HTML["Static HTML/CSS/JS\nRenders from content.json"]
-        end
+        CMS["CMS Admin\nZero Trust OTP Auth\n/api/content · /api/publish\n/api/draft · /api/upload"]
+        PUB["Public Site\nVanilla HTML / CSS / JS\nRenders from content.json"]
     end
 
-    APP --> STORAGE
-
-    subgraph STORAGE["Storage"]
-        direction LR
-        R2["☁️ R2 Object Storage\ncheyla-media\nmedia.cheylajtavarez.com"]
-        GH_JSON2["📄 content.json\nGitHub — source of truth"]
+    subgraph STORE["Storage — Cloudflare R2"]
+        R2["cheyla-media bucket\nmedia.cheylajtavarez.com\ndraft.json auto-save"]
     end
 
-    APIS -->|"commit on Publish"| GH_JSON
-    GH_JSON -->|"triggers rebuild"| CP_MAIN
-    APIS <-->|"drafts + media"| R2
-    R2 -->|"media.cheylajtavarez.com"| HTML
+    VISITORS(["Visitors"])
+    CHEYLA(["Cheyla — Admin"])
 
-    STORAGE --> USERS
-
-    subgraph USERS["End Users"]
-        direction LR
-        PUB["🌐 Visitors\ncheylajtavarez.com"]
-        ADMIN["👤 Cheyla\nadmin.cheylajtavarez.com"]
-    end
+    GH_CODE -->|"push to main triggers deploy"| CF_PAGES
+    CF_PAGES --> CF_INFRA
+    CF_INFRA --> APP
+    CMS -->|"Publish — commits content.json"| GH_JSON
+    GH_JSON -->|"triggers rebuild"| CF_MAIN
+    CMS <-->|"media uploads + drafts"| R2
+    R2 -->|"media.cheylajtavarez.com"| PUB
+    VISITORS --> PUB
+    CHEYLA -->|"OTP email login"| CMS
 ```
 
 ---
