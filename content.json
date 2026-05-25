@@ -32,6 +32,7 @@
       "label": "Learn more",
       "href": "#about"
     },
+    "image": "",
     "card_title": "Suggested use",
     "card_body": "Use this space for a featured image, short bio, latest message, or a highlighted offer."
   },
@@ -51,7 +52,7 @@
       },
       {
         "title": "Your next step",
-        "body": "Give visitors one clear action to take â contact you, follow you, or book time.",
+        "body": "Give visitors one clear action to take Ã¢ÂÂ contact you, follow you, or book time.",
         "image": ""
       }
     ]
@@ -63,11 +64,11 @@
   },
   "contact": {
     "title": "Contact",
-    "intro": "Reach out â I'd love to hear from you.",
+    "intro": "Reach out Ã¢ÂÂ I'd love to hear from you.",
     "email": "cheyla@cheylajtavarez.com",
     "instagram": "@cheylajtavarez",
     "location": "",
-    "form_key": ""
+    "form_key": "dd1ef036-1ca3-49bf-96fd-9c89b6e51ebd"
   },
   "posts": []
 }
