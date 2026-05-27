@@ -204,7 +204,7 @@ Same upload mechanism as post images, wired into the Hero section.
 
 ### Cloudflare Account
 - **Account name:** CheyJTavarez.com
-- **Account ID:** stored in homeserver private repo → `docs/cheyla-site-ops.md`
+- **Account ID:** stored securely offline
 
 ### Pages Projects
 
@@ -419,11 +419,6 @@ Cheyla-site/                          ← git root (github.com/Rtavare/Cheyla-si
 ---
 
 ## Local Development
-
-**Repo location (Windows):**
-```
-C:\Users\produ\OneDrive - University of Phoenix\Desktop\Cheyla's Site\Cheyla-site
-```
 
 **Test Pages Functions locally:**
 ```bash

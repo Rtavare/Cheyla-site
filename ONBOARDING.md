@@ -88,7 +88,7 @@ cheylajtavarez.com re-renders with new content
 | KV namespace | `cheyla-drafts` | Private CMS draft storage (no public URL) |
 | Zero Trust | OTP on `admin.cheylajtavarez.com` | Auth — OTP to `cheylajtavarez@gmail.com` |
 
-Account ID and all secret values are in the **private** homeserver repo → `docs/cheyla-site-ops.md`.
+Account ID and all secret values are stored securely offline.
 
 ---
 
@@ -156,7 +156,7 @@ Cloudflare Pages `_headers` format — one header per line, indented under the p
 - Any secret values
 - Web3Forms key (moved from `content.json` to server-side env var)
 
-These live in the private homeserver repo → `docs/cheyla-site-ops.md`.
+All sensitive values are stored securely offline.
 
 ---
 
@@ -180,11 +180,6 @@ wrangler pages dev admin-site
 GITHUB_TOKEN=ghp_...
 MEDIA_PUBLIC_URL=https://media.cheylajtavarez.com
 # Add DRAFT_KV as a KV namespace binding in wrangler.toml for local KV testing
-```
-
-Repo path (Windows):
-```
-C:\Users\produ\OneDrive - University of Phoenix\Desktop\Cheyla's Site\Cheyla-site
 ```
 
 Push to deploy:

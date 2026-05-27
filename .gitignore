@@ -1,0 +1,6 @@
+# AI context — kept locally, not for public repo
+CLAUDE.md
+
+# Local dev secrets
+admin-site/.dev.vars
+.dev.vars
