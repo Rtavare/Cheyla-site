@@ -11,19 +11,23 @@
         "href": "#about"
       },
       {
-        "label": "Focus",
-        "href": "#focus"
+        "label": "Work with me",
+        "href": "#work"
+      },
+      {
+        "label": "Blog",
+        "href": "#Blog"
       },
       {
         "label": "Contact",
-        "href": "#contact"
+        "href": "#Contact"
       }
     ]
   },
   "hero": {
-    "eyebrow": "Welcome!",
-    "headline": "Beautiful Life. Real Motherhood.",
-    "lead": "This starter homepage is designed to feel warm, personal, and polished. Replace this copy with your real introduction, mission, and the message you want visitors to remember.",
+    "eyebrow": "Welcome to cheylajtavarez.com",
+    "headline": "Mess, motherhood, and the grace of Christ",
+    "lead": "I'm Cheyla!  A mom of three just trying to show up with honesty, a little faith, and absolutely zero perfection. This is a space for the moms who love their babies and still have hard days. Who believe in God and still fall apart sometimes. If you're looking for a highlight reel, this isn't it. But if you need someone to sit with you in the real, then you're in the right place.",
     "cta_primary": {
       "label": "Get in touch",
       "href": "#contact"
@@ -52,7 +56,7 @@
       },
       {
         "title": "Your next step",
-        "body": "Give visitors one clear action to take ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ contact you, follow you, or book time.",
+        "body": "Give visitors one clear action to take ÃÂ¢ÃÂÃÂ contact you, follow you, or book time.",
         "image": ""
       }
     ]
