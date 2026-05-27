@@ -27,6 +27,22 @@ export async function onRequestPost(context) {
     return json({ error: "Missing required fields." }, 400);
   }
 
+  // Length limits
+  if (typeof name !== "string" || name.trim().length < 1 || name.trim().length > 100) {
+    return json({ error: "Name must be 1–100 characters." }, 400);
+  }
+  if (typeof email !== "string" || email.trim().length < 3 || email.trim().length > 254) {
+    return json({ error: "Invalid email address." }, 400);
+  }
+  if (typeof message !== "string" || message.trim().length < 1 || message.trim().length > 5000) {
+    return json({ error: "Message must be 1–5000 characters." }, 400);
+  }
+
+  // Basic email format check
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    return json({ error: "Invalid email address." }, 400);
+  }
+
   try {
     const res = await fetch("https://api.web3forms.com/submit", {
       method:  "POST",
