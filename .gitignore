@@ -4,3 +4,6 @@ CLAUDE.md
 # Local dev secrets
 admin-site/.dev.vars
 .dev.vars
+
+# Dependencies
+node_modules/

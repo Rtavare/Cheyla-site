@@ -468,7 +468,8 @@
     </div>
     <div class="sidebar-label" style="margin-top:0.5rem">Publishing</div>
     <div class="sidebar-section">
-      <div class="nav-item" data-section="posts" onclick="switchSection('posts')"><span class="nav-icon">📝</span><span class="nav-label">Posts</span></div>
+      <div class="nav-item" data-section="posts"  onclick="switchSection('posts')"> <span class="nav-icon">📝</span><span class="nav-label">Posts</span></div>
+      <div class="nav-item" data-section="pages"  onclick="switchSection('pages')"> <span class="nav-icon">📄</span><span class="nav-label">Pages</span></div>
     </div>
   </nav>
 
@@ -663,6 +664,16 @@
       <button class="btn-add" onclick="addPost()">+ New post</button>
     </div>
 
+    <!-- Pages -->
+    <div class="section-wrap" id="sec-pages">
+      <div class="section-header">
+        <h1 class="section-heading">Pages</h1>
+        <p class="section-sub">Standalone pages at /p/slug. Published pages appear at cheylajtavarez.com/p/their-slug.</p>
+      </div>
+      <div class="card-list" id="pages-list"></div>
+      <button class="btn-add" onclick="addPage()">+ New page</button>
+    </div>
+
   </main><!-- /.main -->
 </div><!-- /.shell -->
 
@@ -726,6 +737,7 @@ function emptyContent() {
     about:   { quote: "", title: "", body: "" },
     contact: { title: "", intro: "", email: "", instagram: "", location: "" },
     posts:   [],
+    pages:   [],
   };
 }
 
@@ -765,6 +777,7 @@ function populateForms() {
   val("contact-location",  c.contact?.location);
 
   renderPosts(c.posts || []);
+  renderPages(c.pages || []);
 }
 
 function val(id, v) {
@@ -811,6 +824,7 @@ function collectContent() {
       location:  g("contact-location"),
     },
     posts: collectPosts(),
+    pages: collectPages(),
   };
 }
 
@@ -1051,6 +1065,110 @@ function collectPosts() {
     video_url: document.querySelector(`[data-post-video="${i}"]`)?.value.trim() || "",
     link:      document.querySelector(`[data-post-link="${i}"]`)?.value.trim() || "",
     published: document.querySelector(`[data-post-pub="${i}"]`)?.checked || false,
+  }));
+}
+
+// ─── Pages ───────────────────────────────────────────────────────────────────
+function autoSlug(str) {
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function renderPages(pages) {
+  document.getElementById("pages-list").innerHTML = pages.length
+    ? pages.map((p, i) => `
+      <div class="editable-card" id="page-${i}">
+        <div class="editable-card-header">
+          <span class="card-handle">${p.title ? esc(p.title) : `Page ${i + 1}`}</span>
+          <button class="btn-remove" onclick="removePage(${i})">✕ Remove</button>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Page Title</label>
+          <input class="input" data-page-title="${i}" value="${esc(p.title)}"
+                 oninput="markDirty();updatePageHandle(${i})" />
+        </div>
+
+        <div class="field">
+          <label class="field-label">Slug <span style="font-weight:400;text-transform:none;letter-spacing:0">(URL path)</span></label>
+          <input class="input" data-page-slug="${i}" value="${esc(p.id)}"
+                 placeholder="e.g. work-with-me" oninput="markDirty()" />
+          <p class="field-hint">Page will be live at: <strong>/p/${esc(p.id || "your-slug")}</strong> — lowercase letters, numbers, hyphens only.</p>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Meta Description <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+          <textarea class="textarea" data-page-metadesc="${i}" rows="2"
+                    placeholder="~160 chars for search results" oninput="markDirty()">${esc(p.meta_description)}</textarea>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Page Body</label>
+          <div class="rte-wrap">
+            <div class="rte-toolbar">
+              <button class="rte-btn" onmousedown="event.preventDefault()" onclick="rteCmd('bold')" title="Bold"><b>B</b></button>
+              <button class="rte-btn" onmousedown="event.preventDefault()" onclick="rteCmd('italic')" title="Italic"><i>I</i></button>
+              <button class="rte-btn" onmousedown="event.preventDefault()" onclick="rteInsertLink()" title="Insert link">🔗 Link</button>
+              <button class="rte-btn" onmousedown="event.preventDefault()" onclick="rteCmd('removeFormat')" title="Clear formatting" style="font-size:11px">✕ Clear</button>
+            </div>
+            <div class="rte-body" contenteditable="true" data-page-body="${i}"
+                 data-placeholder="Write your page content…"
+                 oninput="markDirty()">${safeHtml(p.body)}</div>
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <span class="toggle-label">Published</span>
+          <label class="toggle">
+            <input type="checkbox" data-page-pub="${i}" ${p.published ? "checked" : ""} onchange="markDirty()" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </div>`).join("")
+    : `<p style="color:var(--faint);font-size:13px;padding:1rem 0">No pages yet. Click "+ New page" to create your first one.</p>`;
+}
+
+function updatePageHandle(i) {
+  const titleEl = document.querySelector(`[data-page-title="${i}"]`);
+  const handle  = document.querySelector(`#page-${i} .card-handle`);
+  if (!handle || !titleEl) return;
+  const title = titleEl.value.trim();
+  handle.textContent = title || `Page ${i + 1}`;
+  // Auto-fill slug if it's still empty or matches previous auto-slug
+  const slugEl = document.querySelector(`[data-page-slug="${i}"]`);
+  if (slugEl) {
+    const current = slugEl.value;
+    const prev    = autoSlug(slugEl.dataset.prevTitle || "");
+    if (!current || current === prev) {
+      slugEl.value = autoSlug(title);
+    }
+    slugEl.dataset.prevTitle = title;
+  }
+}
+
+function addPage() {
+  const pages = collectPages();
+  pages.push({ id: "", title: "", meta_description: "", body: "", published: false });
+  renderPages(pages);
+  markDirty();
+  const last = document.querySelector(`#page-${pages.length - 1}`);
+  if (last) last.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function removePage(i) {
+  if (!confirm("Remove this page?")) return;
+  const pages = collectPages();
+  pages.splice(i, 1);
+  renderPages(pages);
+  markDirty();
+}
+
+function collectPages() {
+  return [...document.querySelectorAll("[data-page-title]")].map((el, i) => ({
+    id:               document.querySelector(`[data-page-slug="${i}"]`)?.value.trim() || "",
+    title:            el.value.trim(),
+    meta_description: document.querySelector(`[data-page-metadesc="${i}"]`)?.value.trim() || "",
+    body:             rteValue(`[data-page-body="${i}"]`),
+    published:        document.querySelector(`[data-page-pub="${i}"]`)?.checked || false,
   }));
 }
 
