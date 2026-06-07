@@ -834,29 +834,87 @@ function g(id) {
 }
 
 // ─── Navigation links ─────────────────────────────────────────────────────────
+function navHrefOptions(currentHref) {
+  const anchors = [
+    { label: "About section",   value: "#about" },
+    { label: "Work with me",    value: "#workwithme" },
+    { label: "Blog section",    value: "#Blog" },
+    { label: "Contact section", value: "#Contact" },
+  ];
+  const published = (content?.pages || []).filter(p => p.published && p.id);
+  const isCustom  = isCustomNavHref(currentHref);
+
+  let opts = `<option value="">— pick a destination —</option>`;
+  opts += `<optgroup label="Page sections">`;
+  opts += anchors.map(a =>
+    `<option value="${esc(a.value)}"${currentHref === a.value ? " selected" : ""}>${esc(a.label)}</option>`
+  ).join("");
+  opts += `</optgroup>`;
+  if (published.length) {
+    opts += `<optgroup label="Pages">`;
+    opts += published.map(p =>
+      `<option value="/p/${esc(p.id)}"${currentHref === `/p/${p.id}` ? " selected" : ""}>${esc(p.title || p.id)}</option>`
+    ).join("");
+    opts += `</optgroup>`;
+  }
+  opts += `<option value="__custom__"${isCustom ? " selected" : ""}>Custom URL…</option>`;
+  return opts;
+}
+
+function isCustomNavHref(href) {
+  if (!href || href === "#") return false;
+  const known = ["#about", "#workwithme", "#Blog", "#Contact"];
+  if (known.includes(href)) return false;
+  if ((content?.pages || []).some(p => p.published && p.id && href === `/p/${p.id}`)) return false;
+  return true;
+}
+
+function toggleNavCustom(i) {
+  const sel    = document.querySelector(`[data-nav-href="${i}"]`);
+  const custom = document.querySelector(`[data-nav-href-custom="${i}"]`);
+  if (!sel || !custom) return;
+  custom.style.display = sel.value === "__custom__" ? "block" : "none";
+}
+
+function updateNavHandle(i) {
+  const label  = document.querySelector(`[data-nav-label="${i}"]`)?.value.trim();
+  const handle = document.querySelector(`#nav-link-${i} .card-handle`);
+  if (handle) handle.textContent = label || `Link ${i + 1}`;
+}
+
 function renderNavLinks(links) {
-  document.getElementById("nav-links-list").innerHTML = links.map((l, i) => `
+  document.getElementById("nav-links-list").innerHTML = links.map((l, i) => {
+    const isCustom = isCustomNavHref(l.href);
+    return `
     <div class="editable-card" id="nav-link-${i}">
       <div class="editable-card-header">
-        <span class="card-handle">Link ${i + 1}</span>
+        <span class="card-handle">${l.label ? esc(l.label) : `Link ${i + 1}`}</span>
         <button class="btn-remove" onclick="removeNavLink(${i})">✕ Remove</button>
       </div>
       <div class="row-2">
         <div class="field">
           <label class="field-label">Label</label>
-          <input class="input" data-nav-label="${i}" value="${esc(l.label)}" oninput="markDirty()" />
+          <input class="input" data-nav-label="${i}" value="${esc(l.label)}"
+                 oninput="markDirty();updateNavHandle(${i})" />
         </div>
         <div class="field">
-          <label class="field-label">Link / Anchor</label>
-          <input class="input" data-nav-href="${i}" value="${esc(l.href)}" oninput="markDirty()" />
+          <label class="field-label">Destination</label>
+          <select class="input" data-nav-href="${i}" onchange="toggleNavCustom(${i});markDirty()">
+            ${navHrefOptions(l.href)}
+          </select>
+          <input class="input" data-nav-href-custom="${i}"
+                 style="margin-top:0.4rem;display:${isCustom ? 'block' : 'none'}"
+                 value="${isCustom ? esc(l.href) : ''}"
+                 placeholder="https://… or /path" oninput="markDirty()" />
         </div>
       </div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 }
 
 function addNavLink() {
   const links = collectNavLinks();
-  links.push({ label: "", href: "#" });
+  links.push({ label: "", href: "" });
   renderNavLinks(links);
   markDirty();
 }
@@ -869,10 +927,14 @@ function removeNavLink(i) {
 }
 
 function collectNavLinks() {
-  return [...document.querySelectorAll("[data-nav-label]")].map((el, i) => ({
-    label: el.value.trim(),
-    href:  document.querySelector(`[data-nav-href="${i}"]`)?.value.trim() || "#",
-  }));
+  return [...document.querySelectorAll("[data-nav-label]")].map((el, i) => {
+    const sel    = document.querySelector(`[data-nav-href="${i}"]`);
+    const custom = document.querySelector(`[data-nav-href-custom="${i}"]`);
+    const href   = sel?.value === "__custom__"
+      ? (custom?.value.trim() || "#")
+      : (sel?.value || "#");
+    return { label: el.value.trim(), href };
+  });
 }
 
 // ─── Focus cards ─────────────────────────────────────────────────────────────
