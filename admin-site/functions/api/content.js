@@ -25,7 +25,8 @@ export async function onRequestGet(context) {
 
   if (!res.ok) {
     const err = await res.text();
-    return json({ error: `GitHub API error: ${err}` }, 502);
+    console.error("GitHub API error (GET content):", err);
+    return json({ error: "Could not load content. Please try again." }, 502);
   }
 
   const data = await res.json();

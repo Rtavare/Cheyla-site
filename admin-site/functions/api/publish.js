@@ -50,7 +50,8 @@ export async function onRequestPost(context) {
   const getRes = await fetch(API_BASE, { headers: HEADERS });
   if (!getRes.ok) {
     const err = await getRes.text();
-    return json({ error: `GitHub read error: ${err}` }, 502);
+    console.error("GitHub read error (GET sha):", err);
+    return json({ error: "Could not read current content. Please try again." }, 502);
   }
   const { sha } = await getRes.json();
 
@@ -72,7 +73,8 @@ export async function onRequestPost(context) {
 
   if (!putRes.ok) {
     const err = await putRes.text();
-    return json({ error: `GitHub write error: ${err}` }, 502);
+    console.error("GitHub write error (PUT content):", err);
+    return json({ error: "Could not publish content. Please try again." }, 502);
   }
 
   const result = await putRes.json();

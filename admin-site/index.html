@@ -1152,7 +1152,8 @@ function renderPages(pages) {
         <div class="field">
           <label class="field-label">Slug <span style="font-weight:400;text-transform:none;letter-spacing:0">(URL path)</span></label>
           <input class="input" data-page-slug="${i}" value="${esc(p.id)}"
-                 placeholder="e.g. work-with-me" oninput="markDirty()" />
+                 placeholder="e.g. work-with-me"
+                 oninput="this.value=autoSlug(this.value);markDirty()" />
           <p class="field-hint">Page will be live at: <strong>/p/${esc(p.id || "your-slug")}</strong> — lowercase letters, numbers, hyphens only.</p>
         </div>
 
