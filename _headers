@@ -8,14 +8,3 @@
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Frame-Options: DENY
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://media.cheylajtavarez.com data:; connect-src 'self' https://cloudflareinsights.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
-
-# -------------------------------------------------------
-# Admin route — tighter headers, no caching, scoped CSP
-# -------------------------------------------------------
-/admin/*
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: no-referrer
-  Cache-Control: no-store, no-cache, must-revalidate
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://api.anthropic.com; img-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
