@@ -1240,9 +1240,12 @@ function rteCmd(cmd) {
 
 function rteInsertLink() {
   const url = prompt("Enter URL (e.g. https://example.com):");
-  if (url && url.trim()) {
-    document.execCommand("createLink", false, url.trim());
+  if (!url || !url.trim()) return;
+  if (!/^(https?:\/\/|\/|#|mailto:)/i.test(url.trim())) {
+    showToast("Only https://, http://, /, # or mailto: links are allowed.", "red");
+    return;
   }
+  document.execCommand("createLink", false, url.trim());
 }
 
 /** Get the current value of a rich text / contenteditable field. */
