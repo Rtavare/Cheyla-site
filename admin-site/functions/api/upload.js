@@ -13,9 +13,8 @@ export async function onRequestPost(context) {
 
   // CORS guard — only admin domain or localhost
   const origin = request.headers.get("Origin") || "";
-  const allowed =
-    origin.includes("admin.cheylajtavarez.com") ||
-    origin.includes("localhost");
+  const allowed = origin === "https://admin.cheylajtavarez.com" ||
+                  /^https?:\/\/localhost(:\d+)?$/.test(origin);
   if (!allowed) return json({ error: "Forbidden" }, 403);
 
   const BUCKET = env.MEDIA_BUCKET;
