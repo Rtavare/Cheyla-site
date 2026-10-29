@@ -15,6 +15,21 @@
 
 const DRAFT_KEY = "draft";
 
+// CORS: same exact-match rule as publish.js / upload.js. Mutating
+// requests are rejected without an allowed Origin; reads only reject
+// when an Origin is present and not allowed (non-browser and
+// same-origin GET clients do not always send one, and every admin
+// route is already behind Cloudflare Zero Trust).
+function originAllowed(request, { mutating = false } = {}) {
+  const origin = request.headers.get("Origin") || "";
+  const allowed = origin === "https://admin.cheylajtavarez.com" ||
+                  /^https?:\/\/localhost(:\d+)?$/.test(origin);
+  if (allowed) return true;
+  if (!origin && !mutating) return true;
+  return false;
+}
+
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -24,7 +39,11 @@ function json(data, status = 200) {
 
 // ── GET — load draft ──────────────────────────────────────────────────────────
 export async function onRequestGet(context) {
-  const { env } = context;
+  const { request, env } = context;
+
+  if (!originAllowed(request)) {
+    return json({ error: "Forbidden" }, 403);
+  }
 
   if (!env.DRAFT_KV) {
     return json({ error: "DRAFT_KV binding not configured" }, 500);
@@ -34,13 +53,18 @@ export async function onRequestGet(context) {
     const data = await env.DRAFT_KV.get(DRAFT_KEY, { type: "json" });
     return json({ draft: data ?? null });
   } catch (e) {
-    return json({ error: `Failed to read draft: ${e.message}` }, 500);
+    console.error("Failed to read draft:", e);
+    return json({ error: "Failed to read draft. Please try again." }, 500);
   }
 }
 
 // ── POST — save draft ─────────────────────────────────────────────────────────
 export async function onRequestPost(context) {
   const { request, env } = context;
+
+  if (!originAllowed(request, { mutating: true })) {
+    return json({ error: "Forbidden" }, 403);
+  }
 
   if (!env.DRAFT_KV) {
     return json({ error: "DRAFT_KV binding not configured" }, 500);
@@ -62,13 +86,18 @@ export async function onRequestPost(context) {
     await env.DRAFT_KV.put(DRAFT_KEY, JSON.stringify(content));
     return json({ success: true, savedAt: new Date().toISOString() });
   } catch (e) {
-    return json({ error: `Failed to save draft: ${e.message}` }, 500);
+    console.error("Failed to save draft:", e);
+    return json({ error: "Failed to save draft. Please try again." }, 500);
   }
 }
 
 // ── DELETE — clear draft after publish ────────────────────────────────────────
 export async function onRequestDelete(context) {
-  const { env } = context;
+  const { request, env } = context;
+
+  if (!originAllowed(request, { mutating: true })) {
+    return json({ error: "Forbidden" }, 403);
+  }
 
   if (!env.DRAFT_KV) {
     return json({ error: "DRAFT_KV binding not configured" }, 500);
@@ -78,6 +107,7 @@ export async function onRequestDelete(context) {
     await env.DRAFT_KV.delete(DRAFT_KEY);
     return json({ success: true });
   } catch (e) {
-    return json({ error: `Failed to delete draft: ${e.message}` }, 500);
+    console.error("Failed to delete draft:", e);
+    return json({ error: "Failed to delete draft. Please try again." }, 500);
   }
 }

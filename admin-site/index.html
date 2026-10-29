@@ -1054,7 +1054,7 @@ function renderPosts(posts) {
           <label class="field-label">Video URL <span style="font-weight:400;text-transform:none;letter-spacing:0">YouTube · Vimeo (optional)</span></label>
           <input class="input" data-post-video="${i}" value="${esc(p.video_url || '')}"
                  placeholder="https://youtube.com/watch?v=…" oninput="markDirty()" />
-          ${p.video_url ? `<p class="field-hint"><a href="${esc(p.video_url)}" target="_blank" rel="noopener">▶ Preview video ↗</a></p>` : ''}
+          ${p.video_url ? `<p class="field-hint"><a href="${esc(safeHref(p.video_url))}" target="_blank" rel="noopener">▶ Preview video ↗</a></p>` : ''}
         </div>
 
         <!-- Rich text body -->
@@ -1503,7 +1503,11 @@ function showToast(msg, type = "green") {
 function esc(s) {
   return String(s || '')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function safeHref(u) {
+  const v = String(u || '').trim();
+  return /^(https?:\/\/|\/(?!\/)|#|mailto:|tel:)/i.test(v) ? v : '#';
 }
 
 // ─── Warn on unsaved changes ──────────────────────────────────────────────────

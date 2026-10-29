@@ -33,14 +33,16 @@ export async function onRequestPost(context) {
     return json({ error: "No file provided" }, 400);
   }
 
-  // Allowed types
+  // Allowed types. SVG is deliberately NOT allowed: an SVG can carry
+  // script and these files are served from the public media domain.
   const ALLOWED = [
     "image/jpeg", "image/jpg", "image/png", "image/webp",
-    "image/gif", "image/svg+xml",
+    "image/gif",
     "video/mp4", "video/webm", "video/quicktime",
   ];
-  if (!ALLOWED.includes(file.type)) {
-    return json({ error: `File type not allowed: ${file.type}` }, 400);
+  if (!ALLOWED.includes(file.type) || /\.svg$/i.test(file.name || "")) {
+    console.error("Upload rejected, file type:", file.type, "name:", file.name);
+    return json({ error: "File type not allowed." }, 400);
   }
 
   // 50 MB limit

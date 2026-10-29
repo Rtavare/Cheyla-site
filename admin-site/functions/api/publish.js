@@ -30,6 +30,15 @@ export async function onRequestPost(context) {
     return json({ error: "Missing content field" }, 400);
   }
 
+  // ── Server-side validation (the CMS UI checks are not a boundary) ──
+  if (JSON.stringify(content).length > 1_000_000) {
+    return json({ error: "Content is too large to publish (max 1 MB)." }, 413);
+  }
+  const validationError = validateContent(content);
+  if (validationError) {
+    return json({ error: validationError }, 400);
+  }
+
   const TOKEN = env.GITHUB_TOKEN;
   if (!TOKEN) {
     return json({ error: "GITHUB_TOKEN not configured" }, 500);
@@ -82,6 +91,57 @@ export async function onRequestPost(context) {
     success: true,
     commit:  result.commit?.html_url || null,
   });
+}
+
+// ── Content validation ─────────────────────────────────────────────────────
+// Slugs were previously only enforced by an oninput handler in the CMS
+// UI (fix #9); a direct API call could publish any id. URL fields were
+// likewise only scheme-checked in the rich-text toolbar. Enforce both
+// here, where the write actually happens.
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+function isSafeHref(v) {
+  return typeof v === "string" &&
+    /^(https?:\/\/|\/(?!\/)|#|mailto:|tel:)/i.test(v.trim());
+}
+function isSafeSrc(v) {
+  return typeof v === "string" &&
+    /^(https?:\/\/|\/(?!\/)|data:image\/(png|jpe?g|gif|webp|avif);)/i.test(v.trim());
+}
+function validateContent(content) {
+  const pages = Array.isArray(content.pages) ? content.pages : [];
+  const seenSlugs = new Set();
+  for (const page of pages) {
+    const id = (page && page.id) || "";
+    if (page && page.published && !SLUG_RE.test(id)) {
+      return `Page "${page.title || id || "untitled"}" must have a valid slug (lowercase letters, numbers, hyphens) before it can be published.`;
+    }
+    if (id && !SLUG_RE.test(id)) {
+      return `Invalid page slug: "${id}". Use lowercase letters, numbers and hyphens only.`;
+    }
+    if (id && seenSlugs.has(id)) {
+      return `Duplicate page slug: "${id}". Each page needs its own slug.`;
+    }
+    if (id) seenSlugs.add(id);
+  }
+  const hrefFields = [];
+  for (const l of content.nav?.links || []) hrefFields.push(["Navigation link", l.href]);
+  if (content.hero?.cta_primary?.href) hrefFields.push(["Hero primary button", content.hero.cta_primary.href]);
+  if (content.hero?.cta_secondary?.href) hrefFields.push(["Hero secondary button", content.hero.cta_secondary.href]);
+  for (const post of content.posts || []) {
+    if (post.link) hrefFields.push(["Post link", post.link]);
+    if (post.video_url) hrefFields.push(["Post video URL", post.video_url]);
+  }
+  for (const [label, href] of hrefFields) {
+    if (!isSafeHref(href)) return `${label} has an unsafe URL: "${href}". Only https://, http://, /, # , mailto: and tel: links are allowed.`;
+  }
+  const srcFields = [];
+  if (content.hero?.image) srcFields.push(["Hero image", content.hero.image]);
+  for (const card of content.focus?.cards || []) if (card.image) srcFields.push(["Highlight card image", card.image]);
+  for (const post of content.posts || []) if (post.image) srcFields.push(["Post image", post.image]);
+  for (const [label, src] of srcFields) {
+    if (!isSafeSrc(src)) return `${label} has an unsafe image URL.`;
+  }
+  return null;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

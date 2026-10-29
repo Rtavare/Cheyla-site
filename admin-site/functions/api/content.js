@@ -4,7 +4,14 @@
  * using the stored GITHUB_TOKEN secret (works for private repos).
  */
 export async function onRequestGet(context) {
-  const { env } = context;
+  const { request, env } = context;
+
+  // Same-origin / Zero Trust gate: reject a present-but-foreign Origin.
+  const origin = request.headers.get("Origin") || "";
+  if (origin && origin !== "https://admin.cheylajtavarez.com" &&
+      !/^https?:\/\/localhost(:\d+)?$/.test(origin)) {
+    return json({ error: "Forbidden" }, 403);
+  }
 
   const TOKEN = env.GITHUB_TOKEN;
   if (!TOKEN) {

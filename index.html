@@ -502,7 +502,21 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
     function esc(s) {
       return String(s || '')
         .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // Only allow safe URL schemes in content.json links. esc() escapes
+    // quotes but does NOT block javascript:/data:/vbscript: hrefs, so
+    // every href/src rendered from content must pass through here.
+    function safeHref(u, fallback) {
+      const v = String(u || '').trim();
+      if (/^(https?:\/\/|\/(?!\/)|#|mailto:|tel:)/i.test(v)) return v;
+      return fallback !== undefined ? fallback : '#';
+    }
+    function safeSrc(u) {
+      const v = String(u || '').trim();
+      if (/^(https?:\/\/|\/(?!\/)|data:image\/(png|jpe?g|gif|webp|avif);)/i.test(v)) return v;
+      return '';
     }
 
     function set(id, text) {
@@ -538,7 +552,7 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
         set('brand', c.nav.brand);
         document.getElementById('footer-name').textContent = c.nav.brand || '';
         document.getElementById('nav-links').innerHTML = (c.nav.links || [])
-          .map(l => `<a href="${esc(l.href)}">${esc(l.label)}</a>`).join('');
+          .map(l => `<a href="${esc(safeHref(l.href))}">${esc(l.label)}</a>`).join('');
       }
 
       // Hero
@@ -548,8 +562,8 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
         set('hero-lead',     c.hero.lead);
         const p = document.getElementById('cta-primary');
         const s = document.getElementById('cta-secondary');
-        if (p && c.hero.cta_primary)   { p.textContent = c.hero.cta_primary.label;   p.href = c.hero.cta_primary.href || '#'; }
-        if (s && c.hero.cta_secondary) { s.textContent = c.hero.cta_secondary.label; s.href = c.hero.cta_secondary.href || '#'; }
+        if (p && c.hero.cta_primary)   { p.textContent = c.hero.cta_primary.label;   p.href = safeHref(c.hero.cta_primary.href); }
+        if (s && c.hero.cta_secondary) { s.textContent = c.hero.cta_secondary.label; s.href = safeHref(c.hero.cta_secondary.href); }
 
         const heroRight = document.getElementById('hero-right');
         if (heroRight) {
@@ -557,7 +571,7 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
             heroRight.innerHTML = `
               <div class="hero-img-wrap">
                 <img class="hero-img"
-                     src="${esc(c.hero.image)}"
+                     src="${esc(safeSrc(c.hero.image))}"
                      alt="${esc(c.nav?.brand || 'Cheyla J Tavarez')}"
                      loading="eager" />
               </div>`;
@@ -580,7 +594,7 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
         document.getElementById('focus-cards').innerHTML = (c.focus.cards || [])
           .map((card, i) => `
             <article class="card reveal" data-delay="${i * 80}">
-              ${card.image ? `<img class="card-img" src="${esc(card.image)}" alt="${esc(card.title)}" loading="lazy" />` : ''}
+              ${card.image && safeSrc(card.image) ? `<img class="card-img" src="${esc(safeSrc(card.image))}" alt="${esc(card.title)}" loading="lazy" />` : ''}
               <h3>${esc(card.title)}</h3>
               <p>${esc(card.body)}</p>
             </article>`).join('');
@@ -619,7 +633,7 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
           .sort((a, b) => new Date(b.date) - new Date(a.date))
           .map((post, i) => `
             <article class="post-card reveal" data-delay="${i * 80}">
-              ${post.image ? `<img class="post-card-img" src="${esc(post.image)}" alt="${esc(post.title)}" loading="lazy" />` : ''}
+              ${post.image && safeSrc(post.image) ? `<img class="post-card-img" src="${esc(safeSrc(post.image))}" alt="${esc(post.title)}" loading="lazy" />` : ''}
               <div class="post-meta">
                 <span>${esc(new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }))}</span>
                 ${post.category ? `<span class="post-category">${esc(post.category)}</span>` : ''}
@@ -627,8 +641,8 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
               <h3 class="post-title">${esc(post.title)}</h3>
               <p class="post-body">${esc(post.body)}</p>
               <div class="post-links">
-                ${post.link      ? `<a class="post-link" href="${esc(post.link)}"      target="_blank" rel="noopener">Read more →</a>` : ''}
-                ${post.video_url ? `<a class="post-link" href="${esc(post.video_url)}" target="_blank" rel="noopener">▶ Watch</a>`    : ''}
+                ${post.link      ? `<a class="post-link" href="${esc(safeHref(post.link))}"      target="_blank" rel="noopener">Read more →</a>` : ''}
+                ${post.video_url ? `<a class="post-link" href="${esc(safeHref(post.video_url))}" target="_blank" rel="noopener">▶ Watch</a>`    : ''}
               </div>
             </article>`).join('');
       }

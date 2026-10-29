@@ -1,6 +1,6 @@
 # cheylajtavarez.com — Full Stack Reference
 
-> Last updated: May 2026  
+> Last updated: October 2026  
 > Author: Ricardo Tavarez (rtavare)  
 > Repo: [github.com/Rtavare/Cheyla-site](https://github.com/Rtavare/Cheyla-site)
 
@@ -140,7 +140,7 @@ let autoSaveTimer;     // debounce handle for R2 auto-save
 
 ### Startup Sequence (`init()`)
 
-1. Call `GET /api/draft` — if an R2 draft exists, load it and warn user
+1. Call `GET /api/draft` — if a KV draft exists, load it and warn user
 2. If no draft, call `GET /api/content` — load from GitHub
 3. If both fail, load `emptyContent()` so the CMS is always usable
 4. Populate all form fields from loaded data
@@ -149,16 +149,16 @@ let autoSaveTimer;     // debounce handle for R2 auto-save
 ### Auto-Save Flow
 
 ```
-User types → markDirty() → debounce 3s → saveDraft() → POST /api/draft → R2
+User types → markDirty() → debounce 3s → saveDraft() → POST /api/draft → KV
 ```
 
-- Draft persists across browsers and devices (stored in R2, not localStorage)
+- Draft persists across browsers and devices (stored in KV, not localStorage)
 - Status badge shows: `Saved` / `Unsaved changes` / `Saving…` / `Error`
 
 ### Publish Flow
 
 ```
-Click Publish → POST /api/publish → GitHub commit → DELETE /api/draft → R2 cleared
+Click Publish → POST /api/publish → GitHub commit → DELETE /api/draft → KV draft cleared
                ↓
          Cloudflare Pages auto-deploys main site (~30–60s)
 ```
@@ -310,12 +310,12 @@ Proxies R2 files for admin-side preview only.
 1. Cheyla visits admin.cheylajtavarez.com
 2. Cloudflare Zero Trust: OTP sent to cheylajtavarez@gmail.com
 3. She enters OTP → 24-hour session granted
-4. CMS init(): loads draft from R2, or falls back to content.json from GitHub
+4. CMS init(): loads draft from KV, or falls back to content.json from GitHub
 5. She edits content / uploads photos
 6. Every 3 seconds of inactivity: auto-saved to KV (private, no public URL)
 7. She clicks Publish:
    a. POST /api/publish → GitHub API writes content.json → commit created
-   b. DELETE /api/draft → R2 draft cleared
+   b. DELETE /api/draft → KV draft cleared
    c. GitHub push triggers Cloudflare Pages deploy
    d. Main site rebuilds (~30–60 seconds)
    e. cheylajtavarez.com now shows updated content
@@ -365,8 +365,8 @@ Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
 Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline';
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src https://fonts.gstatic.com;
-  connect-src 'self' https://raw.githubusercontent.com;
-  img-src 'self' data:;
+  connect-src 'self';
+  img-src 'self' data: https://media.cheylajtavarez.com;
   frame-ancestors 'none'; base-uri 'self'; form-action 'self'
 ```
 
@@ -399,7 +399,6 @@ Cheyla-site/                          ← git root (github.com/Rtavare/Cheyla-si
 ├── index.html                        ← Main public site (vanilla HTML/CSS/JS)
 ├── content.json                      ← Single source of truth for all site content
 ├── _headers                          ← Cloudflare cache + security headers (main site)
-├── CLAUDE.md                         ← AI assistant context file
 ├── STACK.md                          ← This file
 ├── README.md
 │
@@ -410,7 +409,7 @@ Cheyla-site/                          ← git root (github.com/Rtavare/Cheyla-si
         └── api/
             ├── content.js            ← GET  /api/content   (read content.json from GitHub)
             ├── publish.js            ← POST /api/publish   (commit content.json to GitHub)
-            ├── draft.js              ← GET/POST/DELETE /api/draft (R2 draft storage)
+            ├── draft.js              ← GET/POST/DELETE /api/draft (KV draft storage)
             ├── upload.js             ← POST /api/upload    (upload media to R2)
             └── media/
                 └── [[path]].js       ← GET  /api/media/*   (R2 proxy for admin preview)
@@ -446,7 +445,8 @@ git push origin main
 ### Active TODOs
 
 - [ ] **Video full embeds** — render YouTube/Vimeo iframe on a dedicated post detail page (currently shows as a "Watch" link on cards — good enough until post pages exist)
-- [ ] **Rotate GITHUB_TOKEN every 90 days** — next rotation due ~August 2026
+- [ ] **Rotate GITHUB_TOKEN every 90 days** — last noted rotation May 2026, so a rotation is overdue as of October 2026; prefer a fine-grained PAT limited to this repo (Contents: read/write) over a classic `repo`-scope PAT
+- [x] Remaining-gaps hardening (Oct 2026): server-side slug/URL validation + 1 MB cap in publish, HTML sanitizer for page bodies, safe-href checks on all public links, SVG uploads blocked, upstream error messages sanitized in contact/draft, Origin checks extended to draft/content, CSP sandbox on admin media proxy, HSTS on admin
 
 ### Completed
 

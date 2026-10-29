@@ -27,7 +27,66 @@ export async function onRequest(context) {
 function esc(s) {
   return String(s || "")
     .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+// Only allow safe URL schemes. esc() does not block javascript: hrefs.
+function safeHref(u, fallback) {
+  const v = String(u || "").trim();
+  if (/^(https?:\/\/|\/(?!\/)|#|mailto:|tel:)/i.test(v)) return v;
+  return fallback !== undefined ? fallback : "#";
+}
+function safeSrc(u) {
+  const v = String(u || "").trim();
+  if (/^(https?:\/\/|\/(?!\/)|data:image\/(png|jpe?g|gif|webp|avif);)/i.test(v)) return v;
+  return "";
+}
+
+// Allowlist HTML sanitizer for page.body rich text. The body is stored
+// HTML by design (bold/italic/links from the CMS), so it cannot be
+// esc()'d like other fields -- instead dangerous tags, event handlers,
+// inline styles and unsafe URLs are stripped and only a small set of
+// formatting tags/attributes survives.
+const ALLOWED_TAGS = new Set(["a","p","br","hr","strong","b","em","i","u","s",
+  "h1","h2","h3","h4","ul","ol","li","blockquote","img","div","span",
+  "figure","figcaption","pre","code"]);
+const VOID_TAGS = new Set(["br","hr","img"]);
+function sanitizeHtml(html) {
+  let out = String(html || "");
+  out = out.replace(/<!--[\s\S]*?-->/g, "");
+  // Remove dangerous elements together with their contents.
+  out = out.replace(/<(script|style|iframe|object|embed|form|textarea|select|button|input|link|meta|title|svg|math|template|noscript|video|audio|source|track)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
+  out = out.replace(/<(script|style|iframe|object|embed|form|textarea|select|button|input|link|meta|title|svg|math|template|noscript|video|audio|source|track)\b[^>]*\/?>/gi, "");
+  // Rewrite every remaining tag through the allowlist.
+  out = out.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>/g, (m, rawTag, rawAttrs) => {
+    const tag = rawTag.toLowerCase();
+    if (!ALLOWED_TAGS.has(tag)) return "";
+    if (m.startsWith("</")) return VOID_TAGS.has(tag) ? "" : `</${tag}>`;
+    const attrs = [];
+    const attrRe = /([a-zA-Z-]+)(?:\s*=\s*("([^"]*)"|'([^']*)'|[^\s>]+))?/g;
+    let a;
+    while ((a = attrRe.exec(rawAttrs || "")) !== null) {
+      const name = a[1].toLowerCase();
+      const val = a[3] !== undefined ? a[3] : (a[4] !== undefined ? a[4] : (a[2] || ""));
+      if (tag === "a" && name === "href") {
+        const safe = safeHref(val, "");
+        if (safe) attrs.push(`href="${esc(safe)}"`);
+      } else if (tag === "a" && name === "title") {
+        attrs.push(`title="${esc(val)}"`);
+      } else if (tag === "a" && name === "target" && val === "_blank") {
+        attrs.push('target="_blank"', 'rel="noopener"');
+      } else if (tag === "img" && name === "src") {
+        const safe = safeSrc(val);
+        if (safe) attrs.push(`src="${esc(safe)}"`);
+      } else if (tag === "img" && (name === "alt" || name === "width" || name === "height")) {
+        attrs.push(`${name}="${esc(val)}"`);
+      }
+      // Everything else (on*, style, class, id, ...) is dropped.
+    }
+    const suffix = VOID_TAGS.has(tag) ? " /" : "";
+    return `<${tag}${attrs.length ? " " + attrs.join(" ") : ""}${suffix}>`;
+  });
+  return out;
 }
 
 function htmlResponse(html, status) {
@@ -43,7 +102,7 @@ function htmlResponse(html, status) {
 function navHtml(nav) {
   const brand = esc(nav?.brand || "");
   const links = (nav?.links || []).map(l =>
-    `<a href="${esc(l.href)}">${esc(l.label)}</a>`
+    `<a href="${esc(safeHref(l.href))}">${esc(l.label)}</a>`
   ).join("");
   return `
   <header>
@@ -76,7 +135,7 @@ function renderPage(page, content, slug) {
   const metaDesc= page ? esc(page.meta_description) : "";
   const siteTitle = esc(content?.meta?.title || "Cheyla J Tavarez");
   const pageTitle = page ? `${title} — ${siteTitle}` : `Not Found — ${siteTitle}`;
-  const body    = page ? (page.body || "") : `<p style="color:var(--muted)">The page <strong>/${slug}</strong> could not be found.</p>`;
+  const body    = page ? sanitizeHtml(page.body || "") : `<p style="color:var(--muted)">The page <strong>/${esc(slug)}</strong> could not be found.</p>`;
 
   return `<!DOCTYPE html>
 <html lang="en">

@@ -33,6 +33,11 @@ export async function onRequest(context) {
       "Content-Type":  obj.httpMetadata?.contentType || "application/octet-stream",
       "Cache-Control": "public, max-age=31536000, immutable",
       "Content-Length": obj.size?.toString() ?? "",
+      // Neutralise any script inside a served file (e.g. a legacy SVG
+      // uploaded before SVG uploads were blocked) if it is opened
+      // directly as a document instead of embedded as an image.
+      "Content-Security-Policy": "default-src 'none'; sandbox",
+      "X-Content-Type-Options": "nosniff",
     },
   });
 }

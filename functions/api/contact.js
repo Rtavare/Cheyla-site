@@ -61,10 +61,12 @@ export async function onRequestPost(context) {
     if (result.success) {
       return json({ success: true });
     } else {
-      return json({ error: result.message || "Submission failed." }, 502);
+      console.error("Web3Forms submission failed:", result.message || result);
+      return json({ error: "Submission failed. Please try again." }, 502);
     }
   } catch (e) {
-    return json({ error: `Upstream error: ${e.message}` }, 502);
+    console.error("Web3Forms request failed:", e);
+    return json({ error: "Could not send your message. Please try again." }, 502);
   }
 }
 
