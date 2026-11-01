@@ -12,15 +12,15 @@
       },
       {
         "label": "Work with me",
-        "href": "#workwithme"
+        "href": "/p/work-with-me"
       },
       {
         "label": "Blog",
-        "href": "#Blog"
+        "href": "#posts"
       },
       {
         "label": "Contact",
-        "href": "#Contact"
+        "href": "#contact"
       }
     ]
   },
@@ -41,42 +41,37 @@
     "card_body": "Use this space for a featured image, short bio, latest message, or a highlighted offer."
   },
   "focus": {
-    "title": "What this site can highlight",
-    "intro": "Keep the first version simple. Start with three core themes so visitors immediately understand who you are and what the site is for.",
+    "title": "How we can work together",
+    "intro": "Short-form video, photography, and brand partnerships that bring your brand into real-life moments. Content available in English + Spanish.",
     "cards": [
       {
-        "title": "Your message",
-        "body": "Share your purpose, your values, and the heart behind the work you do.",
+        "title": "Video Content",
+        "body": "Short-form UGC, product demos, testimonials, unboxings, tutorials, and voiceovers, plus lifestyle integration for Reels & TikToks.",
         "image": ""
       },
       {
-        "title": "Your story",
-        "body": "Introduce yourself with a short, honest bio that feels human and memorable.",
+        "title": "Photo Content",
+        "body": "Lifestyle and product photography across family & motherhood, home, beauty, food, and travel & hospitality.",
         "image": ""
       },
       {
-        "title": "Your next step",
-        "body": "Give visitors one clear action to take ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ contact you, follow you, or book time.",
-        "image": ""
-      },
-      {
-        "title": "Work with me",
-        "body": "ubeusurfluhbnAdding some text here",
+        "title": "Brand Partnerships",
+        "body": "Sponsored content, organic UGC, paid usage, whitelisting, and affiliate partnerships. Past partners include Earth Mama Organics, RYZE, Hiya, autobrush, Indeed, and Nursing Queen.",
         "image": ""
       }
     ]
   },
   "about": {
-    "quote": "",
+    "quote": "Let's create something people want to watch.",
     "title": "About",
-    "body": "This section is where you can introduce Cheyla in a more personal way. Talk about your background, what you care about, who you help, or what kind of content and experience people can expect when they visit this site."
+    "body": "Hi, I'm Cheyla! I'm a bilingual motherhood, family, and lifestyle creator and mom of three, based in Pennsylvania. I turn everyday moments into relatable, engaging content, blending authentic storytelling with polished visuals — content that feels natural, builds trust, and helps brands connect with real families and everyday consumers. From motherhood and home to beauty, wellness, food, and travel, what I create feels warm, elevated, and genuinely me."
   },
   "contact": {
     "title": "Contact",
     "intro": "Reach out I'd love to hear from you.",
     "email": "cheyla@cheylajtavarez.com",
     "instagram": "@cheylajtavarez",
-    "location": ""
+    "location": "Pennsylvania"
   },
   "posts": [],
   "pages": [
@@ -86,6 +81,13 @@
       "meta_description": "",
       "body": "",
       "published": false
+    },
+    {
+      "id": "work-with-me",
+      "title": "Work With Me",
+      "meta_description": "Work with Cheyla J Tavarez — bilingual UGC video and photo content for motherhood, family, lifestyle, food, and travel brands. Content in English + Spanish.",
+      "body": "<p>Ready to bring your brand into real-life moments? Let's work together. I'm a bilingual motherhood, family, and lifestyle creator and mom of three, based in Pennsylvania, and I create content that feels natural, builds trust, and helps brands connect with real families.</p><h2>Video Content</h2><ul><li>Short-form UGC</li><li>Product demos</li><li>Testimonials</li><li>Unboxings</li><li>Tutorials</li><li>Voiceovers</li><li>Lifestyle integration</li><li>Reels &amp; TikToks</li></ul><h2>Photo Content</h2><ul><li>Lifestyle photography</li><li>Product photography</li><li>Family &amp; motherhood content</li><li>Home</li><li>Beauty</li><li>Food</li><li>Travel &amp; hospitality</li></ul><h2>Brand Partnerships</h2><ul><li>Sponsored content</li><li>Organic UGC</li><li>Paid usage</li><li>Whitelisting</li><li>Affiliate partnerships</li><li>Travel &amp; hospitality collaborations</li></ul><p>Past partners include Earth Mama Organics, autobrush, RYZE, Indeed, Hiya, and Nursing Queen.</p><h2>English + Spanish</h2><p>Every piece of content is available in English and Spanish, so your brand can reach families in both.</p><p><strong>Let's create something people want to watch.</strong> Reach me at <a href=\"mailto:cheyla@cheylajtavarez.com\">cheyla@cheylajtavarez.com</a> or on Instagram at <a href=\"https://instagram.com/cheylajtavarez\" target=\"_blank\">@cheylajtavarez</a>.</p>",
+      "published": true
     }
   ]
 }
