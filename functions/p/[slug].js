@@ -120,7 +120,10 @@ function footerHtml(content) {
   const email    = content?.contact?.email;
   const igLink   = ig    ? `<a href="https://instagram.com/${esc(ig.replace("@",""))}" target="_blank" rel="noopener">${esc(ig)}</a>` : "";
   const emailLink= email ? `<a href="mailto:${esc(email)}">${esc(email)}</a>` : "";
-  const links    = [igLink, emailLink].filter(Boolean).join(" · ");
+  const policyPages = [["privacy-policy", "Privacy Policy"], ["terms-of-use", "Terms of Use"], ["data-retention-policy", "Data Retention"]];
+  const publishedIds = new Set((content?.pages || []).filter(p => p.published).map(p => p.id));
+  const policyLinks = policyPages.filter(([pid]) => publishedIds.has(pid)).map(([pid, label]) => `<a href="/p/${pid}">${label}</a>`);
+  const links    = [igLink, emailLink, ...policyLinks, `<a href="#" id="cookie-choices">Cookie Choices</a>`].filter(Boolean).join(" · ");
   return `
   <footer>
     <div class="container footer-inner">
@@ -228,6 +231,29 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
     }
     .footer-inner a { color: var(--muted); transition: color 0.15s; }
     .footer-inner a:hover { color: var(--accent-dark); }
+    /* ── Cookie banner ── */
+    .cookie-banner {
+      position: fixed; left: 1rem; right: 1rem; bottom: 1rem; z-index: 1000;
+      background: #ffffff; border: 1px solid #e9dfd8; border-radius: 14px;
+      box-shadow: 0 12px 32px rgba(47,42,39,0.16);
+      padding: 1rem 1.25rem; display: flex; gap: 1rem; align-items: center;
+      justify-content: space-between; max-width: 860px; margin: 0 auto;
+    }
+    .cookie-banner[hidden] { display: none; }
+    .cookie-banner p { margin: 0; font-size: 0.92rem; color: #6b625d; line-height: 1.55; }
+    .cookie-banner a { color: #8f5f4f; text-decoration: underline; }
+    .cookie-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+    .cookie-btn {
+      font: inherit; font-size: 0.9rem; cursor: pointer; border-radius: 999px;
+      padding: 0.55rem 1.1rem; border: 1px solid #b57f6d; background: transparent; color: #8f5f4f;
+    }
+    .cookie-btn-primary { background: #b57f6d; color: #fff; }
+    .cookie-btn:hover { background: #8f5f4f; color: #fff; }
+    @media (max-width: 640px) {
+      .cookie-banner { flex-direction: column; align-items: stretch; }
+      .cookie-actions { justify-content: flex-end; }
+    }
+
     @media (max-width: 600px) {
       .nav-inner, .footer-inner { flex-direction: column; align-items: flex-start; }
     }
@@ -245,6 +271,31 @@ data-cf-beacon='{"token":"9c99492e5cde4b209022837c0a86fc36"}'></script>
     </div>
   </main>
   ${footerHtml(content)}
+  <div class="cookie-banner" id="cookie-banner" hidden>
+      <p>We use cookies to keep this site working and secure. Optional cookies are used only with your permission. You can accept all cookies, or continue with only the necessary ones. <a href="/p/privacy-policy">Privacy Policy</a></p>
+      <div class="cookie-actions">
+        <button type="button" class="cookie-btn cookie-btn-primary" id="cookie-accept-all">Accept all</button>
+        <button type="button" class="cookie-btn" id="cookie-necessary">Only necessary</button>
+      </div>
+    </div>
+  <script>
+    (function () {
+      var KEY = 'cookieConsent';
+      var banner = document.getElementById('cookie-banner');
+      if (!banner) return;
+      function show() { banner.hidden = false; }
+      function hide() { banner.hidden = true; }
+      function save(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
+      var saved = null;
+      try { saved = localStorage.getItem(KEY); } catch (e) {}
+      if (!saved) show();
+      document.getElementById('cookie-accept-all').addEventListener('click', function () { save('all'); hide(); });
+      document.getElementById('cookie-necessary').addEventListener('click', function () { save('necessary'); hide(); });
+      document.addEventListener('click', function (e) {
+        if (e.target && e.target.id === 'cookie-choices') { e.preventDefault(); show(); }
+      });
+    })();
+  </script>
 </body>
 </html>`;
 }
