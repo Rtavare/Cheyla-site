@@ -101,9 +101,13 @@ function htmlResponse(html, status) {
 
 function navHtml(nav) {
   const brand = esc(nav?.brand || "");
-  const links = (nav?.links || []).map(l =>
-    `<a href="${esc(safeHref(l.href))}">${esc(l.label)}</a>`
-  ).join("");
+  const links = (nav?.links || []).map(l => {
+    // Section anchors (#about, #posts, #contact) live on the homepage;
+    // from a /p page they must be root-relative or they go nowhere.
+    const raw = safeHref(l.href);
+    const href = raw && raw.startsWith("#") ? "/" + raw : raw;
+    return `<a href="${esc(href)}">${esc(l.label)}</a>`;
+  }).join("");
   return `
   <header>
     <div class="container nav-inner">
